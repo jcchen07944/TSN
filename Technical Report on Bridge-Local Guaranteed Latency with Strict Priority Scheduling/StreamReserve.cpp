@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "Switch.h"
 #include "EndDevice.h"
@@ -60,25 +62,44 @@ int main() {
     ed5->addNextHop(sw2);
     ed6->addNextHop(sw2);
 
-    Flow *flow1 = new Flow(1);
-    flow1->priority = 3;
-    flow1->burst_size = 128 * byte;
-    flow1->packet_length = 128 * byte;
-    flow1->burst_interval = 250 * us;
-    flow1->route = new int[3]{3, 1, 1};
-    flow1->nextHop();
+    int priority[5] = {3, 3, 3, 2, 2};
+    int burst[5] = {128, 256, 512, 1024, 1522};
+    int interval[5] = {250, 500, 1000, 2000, 4000};
+    int route[2][3] = {{3, 1, -1},
+                        {0, 0, -1}};
 
-    Flow *flow2 = new Flow(2);
-    flow2->priority = 3;
-    flow2->burst_size = 128 * byte;
-    flow2->packet_length = 128 * byte;
-    flow2->burst_interval = 250 * us;
-    flow2->route = new int[3]{3, 1, 1};
-    flow2->nextHop();
+    srand(time(NULL));
+    int accept_count = 0;
+    for(int i = 0; i < 500; ++i) {
+        int random_flow_index = rand() % 5;
+        int random_route_index = rand() % 2;
+        Switch *first_switch = nullptr;
 
-    sw1->addFlow(flow1);
-    sw1->addFlow(flow2);
+        Flow *flow = new Flow(i+1);
+        flow->priority = priority[random_flow_index];
+        flow->burst_size = burst[random_flow_index] * byte;
+        flow->packet_length = burst[random_flow_index] * byte;
+        flow->burst_interval = interval[random_flow_index] * us;
+        if(random_route_index == 0) {
+            route[random_route_index][2] = rand() % 3 + 1;
+            first_switch = sw1;
+        }
+        else {
+            route[random_route_index][2] = rand() % 3;
+            first_switch = sw3;
+        }
+        flow->route = route[random_route_index];
 
+        printf("--------------------\n");
+        if(first_switch->addFlow(flow)) {
+            accept_count++;
+            printf("ID : %d Accept\n", flow->ID);
+        }
+        else {
+            printf("ID : %d Reject\n", flow->ID);
+        }
+    }
+    printf("Accept flows count : %d\n", accept_count);
     /*delete ed6;
     delete ed5;
     delete ed4;

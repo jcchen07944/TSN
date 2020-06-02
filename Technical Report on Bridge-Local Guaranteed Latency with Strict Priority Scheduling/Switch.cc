@@ -9,7 +9,7 @@ Switch::Switch(int port_count) {
     rate = 1000.0d;
 
     for(int i = 0; i < port_count; i++)
-        reserved_flows.push_back(new std::vector<Flow*>());
+        reserved_flows.push_back(new std::vector<std::pair<Flow*, int> >());
     port = new Port[port_count];
 }
 
@@ -20,16 +20,17 @@ Switch::~Switch() {
 }
 
 bool Switch::addFlow(Flow *flow) {
+    flow->nextHop();
+    int output_port = flow->next_route;
+    int hop_count = flow->hop_count;
     if(isAccepted(flow)) {
-        Switch *next_switch = port[flow->next_route].sw;
+        Switch *next_switch = port[output_port].sw;
         if(next_switch != nullptr) {
-            flow->nextHop();
             if(!next_switch->addFlow(flow)) {
                 return false;
             }
         }
-        reserved_flows[flow->next_route]->push_back(flow);
-        //printf("");
+        reserved_flows[output_port]->push_back(std::make_pair(flow, hop_count));
         return true;
     }
     else {
@@ -49,32 +50,38 @@ void Switch::addNextHop(int port_num, Switch *sw, EndDevice *ed) {
 
 double Switch::computeLatency(Flow *flow) {
     double latency = 0.0d;
-    double acc_min_delay = ((double)flow->packet_length)/(rate * (double)mega);
-    double acc_max_delay = 0.0d;
-    for(double delay : guarantee_delay)
-        acc_max_delay += delay;
 
     // Higher priority
-    for(Flow *f : *(reserved_flows[flow->next_route])) {
+    for(std::pair<Flow*, int> p : *(reserved_flows[flow->next_route])) {
+        Flow *f = p.first;
+        int hop_count = p.second;
         if(f->priority > flow->priority) {
-            latency += ceil((acc_max_delay - acc_min_delay + guarantee_delay[flow->priority]) / flow->burst_interval) *
-                        ((double)f->burst_size)/(rate * (double)mega);
+            double acc_min_delay = ((double)f->packet_length) / (rate * (double)mega) * ((double)(hop_count - 1));
+            double acc_max_delay = guarantee_delay[f->priority] * (double)hop_count;
+            latency += (ceil((acc_max_delay - acc_min_delay + guarantee_delay[flow->priority]) / f->burst_interval) *
+                        ((double)f->burst_size)/(rate * (double)mega));
         }
     }
 
     // Equal priority
-    for(Flow *f : *(reserved_flows[flow->next_route])) {
+    for(std::pair<Flow*, int> p : *(reserved_flows[flow->next_route])) {
+        Flow *f = p.first;
+        int hop_count = p.second;
         if(f->priority == flow->priority) {
-            latency += ceil((acc_max_delay - acc_min_delay) / flow->burst_interval) *
-                        ((double)f->burst_size)/(rate * (double)mega);
+            double acc_min_delay = ((double)f->packet_length) / (rate * (double)mega) * ((double)(hop_count - 1));
+            double acc_max_delay = guarantee_delay[f->priority] * (double)hop_count;
+            latency += (ceil((acc_max_delay - acc_min_delay) / f->burst_interval) *
+                        ((double)f->burst_size)/(rate * (double)mega));
         }
     }
 
     // Lower priority
     double larger_latency = 0.0f;
-    for(Flow *f : *(reserved_flows[flow->next_route]))
+    for(std::pair<Flow*, int> p : *(reserved_flows[flow->next_route])) {
+        Flow *f = p.first;
         if(f->priority < flow->priority)
             larger_latency = std::max(larger_latency, ((double)f->packet_length)/(rate * (double)mega));
+    }
     latency += larger_latency;
 
     printf("%.10f\n", latency);

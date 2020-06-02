@@ -2,6 +2,7 @@
 #define SWITCH_H
 
 #include <vector>
+#include <utility>
 
 #include "Flow.h"
 #include "Port.h"
@@ -14,7 +15,7 @@ class EndDevice;
 class Switch {
 public:
     double guarantee_delay[8]; // second
-    std::vector<std::vector<Flow*>*> reserved_flows;
+    std::vector<std::vector<std::pair<Flow*, int> >*> reserved_flows;
     double rate; // Mb/s
     Port *port;
 

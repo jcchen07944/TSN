@@ -10,10 +10,10 @@ Flow::~Flow() {
 }
 
 void Flow::nextHop() {
-    next_route = route[_next_route_index++];
+    next_route = route[hop_count++];
 }
 
 void Flow::restartRoute() {
     next_route = 0;
-    _next_route_index = 0;
+    hop_count = 0;
 }

@@ -11,6 +11,7 @@ public:
 
     int *route;
     int next_route = 0;
+    int hop_count = 0;
 
     Flow(int ID);
 
@@ -20,7 +21,6 @@ public:
 
     void restartRoute();
 private:
-    int _next_route_index = 0;
 };
 
 #endif
