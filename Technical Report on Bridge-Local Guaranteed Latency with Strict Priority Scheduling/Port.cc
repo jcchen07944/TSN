@@ -1,7 +1,9 @@
 #include "Port.h"
 
 Port::Port() {
-
+    device = 0;
+    sw = nullptr;
+    ed = nullptr;
 }
 
 Port::~Port() {

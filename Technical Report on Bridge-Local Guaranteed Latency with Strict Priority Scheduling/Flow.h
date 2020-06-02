@@ -9,7 +9,6 @@ public:
     int packet_length;  // bit
     double burst_interval; // second
 
-    int max_hop = 0;
     int *route;
     int next_route = 0;
 
@@ -17,7 +16,7 @@ public:
 
     ~Flow();
 
-    bool nextHop();
+    void nextHop();
 
     void restartRoute();
 private:

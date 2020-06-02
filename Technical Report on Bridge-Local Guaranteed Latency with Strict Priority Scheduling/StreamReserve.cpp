@@ -60,16 +60,24 @@ int main() {
     ed5->addNextHop(sw2);
     ed6->addNextHop(sw2);
 
-    Flow *flow = new Flow(1);
-    flow->priority = 3;
-    flow->burst_size = 128 * byte;
-    flow->packet_length = 128 * byte;
-    flow->burst_interval = 250 * us;
-    flow->max_hop = 3;
-    flow->route = new int[3]{3, 1, 1};
-    flow->nextHop();
+    Flow *flow1 = new Flow(1);
+    flow1->priority = 3;
+    flow1->burst_size = 128 * byte;
+    flow1->packet_length = 128 * byte;
+    flow1->burst_interval = 250 * us;
+    flow1->route = new int[3]{3, 1, 1};
+    flow1->nextHop();
 
-    sw1->addFlow(flow);
+    Flow *flow2 = new Flow(2);
+    flow2->priority = 3;
+    flow2->burst_size = 128 * byte;
+    flow2->packet_length = 128 * byte;
+    flow2->burst_interval = 250 * us;
+    flow2->route = new int[3]{3, 1, 1};
+    flow2->nextHop();
+
+    sw1->addFlow(flow1);
+    sw1->addFlow(flow2);
 
     /*delete ed6;
     delete ed5;

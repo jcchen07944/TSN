@@ -15,7 +15,7 @@ class Switch {
 public:
     double guarantee_delay[8]; // second
     std::vector<std::vector<Flow*>*> reserved_flows;
-    double rate = 1000; // Mb/s
+    double rate; // Mb/s
     Port *port;
 
     Switch(int port_count);

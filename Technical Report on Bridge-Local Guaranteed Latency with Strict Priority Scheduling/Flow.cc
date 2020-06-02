@@ -9,13 +9,8 @@ Flow::~Flow() {
 
 }
 
-bool Flow::nextHop() {
-    if(_next_route_index >= max_hop)
-        return false;
-
-    next_route = route[_next_route_index];
-    _next_route_index++;
-    return true;
+void Flow::nextHop() {
+    next_route = route[_next_route_index++];
 }
 
 void Flow::restartRoute() {

@@ -6,6 +6,8 @@
 #include "Constants.h"
 
 Switch::Switch(int port_count) {
+    rate = 1000.0d;
+
     for(int i = 0; i < port_count; i++)
         reserved_flows.push_back(new std::vector<Flow*>());
     port = new Port[port_count];
@@ -18,10 +20,11 @@ Switch::~Switch() {
 }
 
 bool Switch::addFlow(Flow *flow) {
-    printf("%d\n", flow->next_route);
     if(isAccepted(flow)) {
-        if(flow->nextHop()) {
-            if(!port[flow->next_route].sw->addFlow(flow)) {
+        Switch *next_switch = port[flow->next_route].sw;
+        if(next_switch != nullptr) {
+            flow->nextHop();
+            if(!next_switch->addFlow(flow)) {
                 return false;
             }
         }
@@ -46,7 +49,6 @@ void Switch::addNextHop(int port_num, Switch *sw, EndDevice *ed) {
 
 double Switch::computeLatency(Flow *flow) {
     double latency = 0.0d;
-    printf("%f\n", rate * (double)mega);
     double acc_min_delay = ((double)flow->packet_length)/(rate * (double)mega);
     double acc_max_delay = 0.0d;
     for(double delay : guarantee_delay)
@@ -75,6 +77,7 @@ double Switch::computeLatency(Flow *flow) {
             larger_latency = std::max(larger_latency, ((double)f->packet_length)/(rate * (double)mega));
     latency += larger_latency;
 
+    printf("%.10f\n", latency);
     return latency;
 }
 

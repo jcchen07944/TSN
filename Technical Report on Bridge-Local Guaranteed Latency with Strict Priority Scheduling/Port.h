@@ -6,9 +6,9 @@
 
 class Port {
 public:
-    int device = 0;
-    Switch *sw = nullptr;
-    EndDevice *ed = nullptr;
+    int device;
+    Switch *sw;
+    EndDevice *ed;
 
     Port();
 
