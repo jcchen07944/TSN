@@ -8,31 +8,33 @@
 #include "Constants.h"
 
 int main() {
-    Switch *sw1 = new Switch(4);
+    double delta3 = 2000.0;
+    double delta2 = 8000.0;
+    Switch *sw1 = new Switch(1, 4);
     sw1->guarantee_delay[0] = 0;
     sw1->guarantee_delay[1] = 0;
-    sw1->guarantee_delay[2] = 250 * us;
-    sw1->guarantee_delay[3] = 100 * us;
+    sw1->guarantee_delay[2] = delta2 * us;
+    sw1->guarantee_delay[3] = delta3 * us;
     sw1->guarantee_delay[4] = 0;
     sw1->guarantee_delay[5] = 0;
     sw1->guarantee_delay[6] = 0;
     sw1->guarantee_delay[7] = 0;
 
-    Switch *sw2 = new Switch(2);
+    Switch *sw2 = new Switch(2, 2);
     sw2->guarantee_delay[0] = 0;
     sw2->guarantee_delay[1] = 0;
-    sw2->guarantee_delay[2] = 250 * us;
-    sw2->guarantee_delay[3] = 100 * us;
+    sw2->guarantee_delay[2] = delta2 * us;
+    sw2->guarantee_delay[3] = delta3 * us;
     sw2->guarantee_delay[4] = 0;
     sw2->guarantee_delay[5] = 0;
     sw2->guarantee_delay[6] = 0;
     sw2->guarantee_delay[7] = 0;
 
-    Switch *sw3 = new Switch(4);
+    Switch *sw3 = new Switch(3, 4);
     sw3->guarantee_delay[0] = 0;
     sw3->guarantee_delay[1] = 0;
-    sw3->guarantee_delay[2] = 250 * us;
-    sw3->guarantee_delay[3] = 100 * us;
+    sw3->guarantee_delay[2] = delta2 * us;
+    sw3->guarantee_delay[3] = delta3 * us;
     sw3->guarantee_delay[4] = 0;
     sw3->guarantee_delay[5] = 0;
     sw3->guarantee_delay[6] = 0;
@@ -90,14 +92,15 @@ int main() {
         }
         flow->route = route[random_route_index];
 
-        printf("--------------------\n");
+        printf("Flow %d, p = %d, burst = %d, interval = %f\n", flow->ID, flow->priority, flow->burst_size, flow->burst_interval);
         if(first_switch->addFlow(flow)) {
             accept_count++;
-            printf("ID : %d Accept\n", flow->ID);
+            printf("Accept\n");
         }
         else {
-            printf("ID : %d Reject\n", flow->ID);
+            printf("Reject\n");
         }
+        printf("--------------------\n");
     }
     printf("Accept flows count : %d\n", accept_count);
     /*delete ed6;

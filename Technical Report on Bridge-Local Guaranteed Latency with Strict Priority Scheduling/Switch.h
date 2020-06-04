@@ -14,12 +14,18 @@ class EndDevice;
 
 class Switch {
 public:
+    struct Accumulate {
+        double max_delay;
+        double min_delay;
+    };
+
+    int ID;
     double guarantee_delay[8]; // second
-    std::vector<std::vector<std::pair<Flow*, int> >*> reserved_flows;
+    std::vector<std::vector<std::pair<Flow*, Accumulate*> >*> reserved_flows;
     double rate; // Mb/s
     Port *port;
 
-    Switch(int port_count);
+    Switch(int ID, int port_count);
 
     ~Switch();
 
