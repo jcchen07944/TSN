@@ -8,8 +8,8 @@
 #include "Constants.h"
 
 int main() {
-    double delta3 = 2000.0;
-    double delta2 = 8000.0;
+    double delta3 = 100.0;
+    double delta2 = 250.0;
     Switch *sw1 = new Switch(1, 4);
     sw1->guarantee_delay[0] = 0;
     sw1->guarantee_delay[1] = 0;
