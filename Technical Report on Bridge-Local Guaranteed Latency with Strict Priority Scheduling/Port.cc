@@ -70,7 +70,7 @@ double Port::computeLatency(Flow *flow) {
     }
     latency += larger_latency;
 
-    // printf("%.9f\n", latency);
+    printf("%.9f\n", latency);
     return latency;
 }
 
