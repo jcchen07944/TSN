@@ -8,8 +8,8 @@
 #include "Constants.h"
 
 int main() {
-    double delta3 = 100.0;
-    double delta2 = 250.0;
+    double delta3 = 500.0;
+    double delta2 = 2000.0;
     Switch *sw1 = new Switch(1, 4);
     sw1->guarantee_delay[0] = 0;
     sw1->guarantee_delay[1] = 0;
@@ -103,6 +103,8 @@ int main() {
         printf("--------------------\n");
     }
     printf("Accept flows count : %d\n", accept_count);
+
+
     /*delete ed6;
     delete ed5;
     delete ed4;

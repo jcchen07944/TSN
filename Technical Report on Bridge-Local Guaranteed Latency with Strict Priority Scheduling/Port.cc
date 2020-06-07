@@ -44,62 +44,52 @@ bool Port::addFlow(Flow* flow) {
 
 double Port::computeLatency(Flow *flow) {
     double latency = 0.0d;
+    double larger_latency = 0.0f;
 
-    // Higher priority
     for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
         Flow *f = p.first;
         if(f->ID == flow->ID)
             continue;
+
         Accumulate *accu = p.second;
+
+        // Higher priority
         if(f->priority > flow->priority) {
             latency += (ceil((accu->max_delay - accu->min_delay + guarantee_delay[flow->priority]) / f->burst_interval) *
-                        ((double)f->burst_size)/rate);
+                        ((double)f->burst_size) / rate);
         }
-    }
-
-    // Equal priority
-    for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
-        Flow *f = p.first;
-        if(f->ID == flow->ID)
-            continue;
-        Accumulate *accu = p.second;
-        if(f->priority == flow->priority) {
+        // Equal priority
+        else if(f->priority == flow->priority) {
             latency += (ceil((accu->max_delay - accu->min_delay) / f->burst_interval) *
-                        ((double)f->burst_size)/rate);
+                        ((double)f->burst_size) / rate);
         }
-    }
-
-    // Lower priority
-    double larger_latency = 0.0f;
-    for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
-        Flow *f = p.first;
-        if(f->ID == flow->ID)
-            continue;
-        if(f->priority < flow->priority)
+        // Lower priority
+        else {
             larger_latency = std::max(larger_latency, ((double)f->packet_length)/rate);
+        }
     }
     latency += larger_latency;
 
-    printf("%.9f\n", latency);
+    // printf("%.9f\n", latency);
     return latency;
 }
 
 bool Port::isAccepted(Flow *flow) {
-    /*Accumulate *accu = new Accumulate();
+    Accumulate *accu = new Accumulate();
     accu->max_delay = guarantee_delay[flow->priority] * (double)flow->hop_count;
     accu->min_delay = (flow->packet_length / rate) * (double)(flow->hop_count - 1);
     reserved_flows.push_back(std::make_pair(flow, accu));
 
     for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
-        Flow *f = p.first;*/
-        if(computeLatency(flow) > guarantee_delay[flow->priority]) {
-            //delete accu;
-            //reserved_flows.pop_back();
+        Flow *f = p.first;
+        if(computeLatency(f) > guarantee_delay[f->priority]) {
+            delete accu;
+            reserved_flows.pop_back();
             return false;
         }
-    /*}
+    }
     delete accu;
-    reserved_flows.pop_back();*/
+    reserved_flows.pop_back();
     return true;
 }
 

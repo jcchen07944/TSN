@@ -23,7 +23,7 @@ bool Switch::addFlow(Flow *flow) {
     flow->nextHop();
     int output_port = flow->next_route;
     printf("Switch %d, Port %d\n", ID, output_port);
-    port[output_port].addFlow(flow);
+    return port[output_port].addFlow(flow);
 }
 
 void Switch::addNextHop(int port_num, Switch *sw, EndDevice *ed) {
