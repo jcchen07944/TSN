@@ -82,21 +82,25 @@ int main() {
     ed1->addNextHop(sw1);
     ed2->addNextHop(sw1);
 
-    int priority[3] = {0, 1, 2};
-    int burst[3] = {1500, 256, 64};
-    int interval[3] = {100000, 1000, 250};
+    int priority[6] = {0, 1, 2, 2, 2, 2};
+    int burst[6] = {1500, 256, 64, 128, 128, 64};
+    int interval[6] = {100000, 1000, 250, 100, 200, 500};
     int route[1][1] = {{1}};
 
-    Flow *flow = new Flow(1);
-    flow->priority = priority[0];
-    flow->burst_size = burst[0] * byte;
-    flow->packet_length = burst[0] * byte;
-    flow->burst_interval = (double)interval[0] * us;
-    flow->route = route[0];
-    sw1->addFlow(flow);
+    int BE = 10;
+    int AVB = 100;
+    for(int i = 0; i < BE; ++i) {
+        Flow *flow = new Flow(i);
+        flow->priority = priority[0];
+        flow->burst_size = burst[0] * byte;
+        flow->packet_length = burst[0] * byte;
+        flow->burst_interval = (double)interval[0] * us;
+        flow->route = route[0];
+        sw1->addFlow(flow);
+    }
 
-    for(int i = 0; i < 20; ++i) {
-        Flow *flow = new Flow(i+2);
+    for(int i = 0; i < AVB; ++i) {
+        Flow *flow = new Flow(i+BE);
         flow->priority = priority[1];
         flow->burst_size = burst[1] * byte;
         flow->packet_length = burst[1] * byte;
@@ -105,13 +109,16 @@ int main() {
         sw1->addFlow(flow);
     }
 
+    srand(time(NULL));
     int accept_count = 0;
-    for(int i = 0; i < 371; ++i) {
-        Flow *flow = new Flow(i+22);
-        flow->priority = priority[2];
-        flow->burst_size = burst[2] * byte;
-        flow->packet_length = burst[2] * byte;
-        flow->burst_interval = (double)interval[2] * us;
+    for(int i = 0; i < 500; ++i) {
+        int random_flow_index = rand() % 4 + 2;
+
+        Flow *flow = new Flow(i+BE+AVB);
+        flow->priority = priority[random_flow_index];
+        flow->burst_size = burst[random_flow_index] * byte;
+        flow->packet_length = burst[random_flow_index] * byte;
+        flow->burst_interval = (double)interval[random_flow_index] * us;
         flow->route = route[0];
 
         printf("Flow %d, p = %d, burst = %d, interval = %f\n", flow->ID, flow->priority, flow->burst_size, flow->burst_interval);
