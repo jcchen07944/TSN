@@ -70,7 +70,7 @@ double Port::computeLatency(Flow *flow) {
     }
     latency += larger_latency;
 
-    printf("%.9f\n", latency);
+    // printf("%.9f\n", latency);
     return latency;
 }
 
@@ -82,7 +82,10 @@ bool Port::isAccepted(Flow *flow) {
 
     for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
         Flow *f = p.first;
-        if(computeLatency(f) > guarantee_delay[f->priority]) {
+        double latency = computeLatency(f);
+        if(f->ID == 2)
+            printf("%.9f\n", latency);
+        if(latency > guarantee_delay[f->priority]) {
             delete accu;
             reserved_flows.pop_back();
             return false;
