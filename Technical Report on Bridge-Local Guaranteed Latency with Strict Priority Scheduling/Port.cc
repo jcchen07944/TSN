@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "Port.h"
+#include "Constants.h"
 
 Port::Port() {
     device = 0;
@@ -42,35 +43,69 @@ bool Port::addFlow(Flow* flow) {
     }
 }
 
-double Port::computeLatency(Flow *flow) {
+double Port::computeLatency(Flow *flow, int MODE) {
     double latency = 0.0d;
     double larger_latency = 0.0f;
 
-    for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
-        Flow *f = p.first;
-        if(f->ID == flow->ID)
-            continue;
+    /*
+    ** Use Strict Priority method.
+    */
+    if(MODE == SP_MODE) {
+        for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
+            Flow *f = p.first;
+            if(f->ID == flow->ID)
+                continue;
 
-        Accumulate *accu = p.second;
+            Accumulate *accu = p.second;
 
-        // Higher priority
-        if(f->priority > flow->priority) {
-            latency += (ceil((accu->max_delay - accu->min_delay + guarantee_delay[flow->priority]) / f->burst_interval) *
-                        ((double)f->burst_size) / rate);
+            // Higher priority
+            if(f->priority > flow->priority) {
+                latency += (ceil((accu->max_delay - accu->min_delay + guarantee_delay[flow->priority]) / f->burst_interval) *
+                            ((double)f->burst_size) / rate);
+            }
+            // Equal priority
+            else if(f->priority == flow->priority) {
+                latency += (ceil((accu->max_delay - accu->min_delay) / f->burst_interval) *
+                            ((double)f->burst_size) / rate);
+            }
+            // Lower priority
+            else {
+                larger_latency = std::max(larger_latency, ((double)f->packet_length)/rate);
+            }
         }
-        // Equal priority
-        else if(f->priority == flow->priority) {
-            latency += (ceil((accu->max_delay - accu->min_delay) / f->burst_interval) *
-                        ((double)f->burst_size) / rate);
-        }
-        // Lower priority
-        else {
-            larger_latency = std::max(larger_latency, ((double)f->packet_length)/rate);
+        latency += larger_latency;
+    }
+    /*
+    ** Use Urgency-Based Scheduler method. (LRQ)
+    */
+    else if(MODE == UBS_MODE) {
+        for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
+            Flow *j = p.first;
+            if(j->priority != flow->priority)
+                continue;
+            bool has_low_packet = false;
+            double burst_sum = 0.0f;
+            double rate_sum = 0.0f;
+            for(std::pair<Flow*, Accumulate*> q : reserved_flows) {
+                Flow *f = q.first;
+
+                if(f->priority > j->priority) {
+                    burst_sum += f->burst_size;
+                    rate_sum += f->packet_length / f->burst_interval;
+                }
+                else if(f->priority == flow->priority) {
+                    if(f->ID != j->ID)
+                        burst_sum += f->burst_size;
+                }
+                else {
+                    has_low_packet = true;
+                }
+            }
+            latency = std::max(latency, (burst_sum + (has_low_packet? (1542 * byte):0)) / (rate - rate_sum) + (j->packet_length / rate));
         }
     }
-    latency += larger_latency;
 
-    // printf("%.9f\n", latency);
+    //printf("%.9f\n", latency);
     return latency;
 }
 
@@ -82,7 +117,7 @@ bool Port::isAccepted(Flow *flow) {
 
     for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
         Flow *f = p.first;
-        double latency = computeLatency(f);
+        double latency = computeLatency(f, UBS_MODE);
         if(f->ID == 2)
             printf("%.9f\n", latency);
         if(latency > guarantee_delay[f->priority]) {

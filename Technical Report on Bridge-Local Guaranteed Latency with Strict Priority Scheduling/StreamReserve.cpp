@@ -106,7 +106,7 @@ int main() {
     }
 
     int accept_count = 0;
-    for(int i = 0; i < 360; ++i) {
+    for(int i = 0; i < 371; ++i) {
         Flow *flow = new Flow(i+22);
         flow->priority = priority[2];
         flow->burst_size = burst[2] * byte;

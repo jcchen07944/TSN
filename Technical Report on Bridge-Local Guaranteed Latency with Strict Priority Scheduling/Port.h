@@ -34,7 +34,7 @@ private:
     int SWITCH = 1;
     int END_DEVICE = 2;
 
-    double computeLatency(Flow *flow);
+    double computeLatency(Flow *flow, int MODE);
 
     bool isAccepted(Flow *flow);
 };

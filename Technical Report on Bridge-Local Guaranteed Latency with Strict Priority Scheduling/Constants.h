@@ -6,4 +6,7 @@ const double ms = 0.001;
 const int byte = 8;
 const int mega = 1000000;
 
+const int SP_MODE = 0;
+const int UBS_MODE = 1;
+
 #endif
