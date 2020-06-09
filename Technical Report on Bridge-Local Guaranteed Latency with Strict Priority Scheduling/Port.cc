@@ -118,9 +118,9 @@ bool Port::isAccepted(Flow *flow) {
     for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
         Flow *f = p.first;
         double latency = computeLatency(f, UBS_MODE);
-        if(f->ID == 11)
+        //if(f->ID == 11)
             printf("%.9f\n", latency);
-        if(latency > f->burst_interval /*guarantee_delay[f->priority]*/) {
+        if(latency > (f->burst_interval == 250 * us ? 20 * us : 10 * us) /*guarantee_delay[f->priority]*/) {
             delete accu;
             reserved_flows.pop_back();
             return false;

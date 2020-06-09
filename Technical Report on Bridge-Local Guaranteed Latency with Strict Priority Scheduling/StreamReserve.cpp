@@ -87,9 +87,9 @@ int main() {
     int interval[6] = {100000, 1000, 250, 100, 200, 500};
     int route[1][1] = {{1}};
 
-    int BE = 10;
-    int AVB = 100;
-    for(int i = 0; i < BE; ++i) {
+    int BE = 0;
+    int AVB = 0;
+    for(int i = 1; i <= BE; ++i) {
         Flow *flow = new Flow(i);
         flow->priority = priority[0];
         flow->burst_size = burst[0] * byte;
@@ -99,7 +99,7 @@ int main() {
         sw1->addFlow(flow);
     }
 
-    for(int i = 0; i < AVB; ++i) {
+    for(int i = 1; i <= AVB; ++i) {
         Flow *flow = new Flow(i+BE);
         flow->priority = priority[1];
         flow->burst_size = burst[1] * byte;
@@ -111,8 +111,8 @@ int main() {
 
     srand(time(NULL));
     int accept_count = 0;
-    for(int i = 0; i < 500; ++i) {
-        int random_flow_index = rand() % 4 + 2;
+    for(int i = 1; i <= 50; ++i) {
+        int random_flow_index = rand() % 2 + 2;
 
         Flow *flow = new Flow(i+BE+AVB);
         flow->priority = priority[random_flow_index];
