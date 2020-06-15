@@ -6,7 +6,7 @@
 
 Switch::Switch(int ID, int port_count) {
     this->ID = ID;
-    rate = 1000.0d * (double)mega; // Mb/s
+    rate = 100.0d * (double)mega; // Mb/s
 
     port = new Port[port_count];
     for(int i = 0; i < port_count; i++) {
