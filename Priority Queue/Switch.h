@@ -10,7 +10,7 @@
 #include "EndDevice.h"
 #include "Packet.h"
 
-class Port;
+class SWPort;
 class Flow;
 class EndDevice;
 
@@ -18,7 +18,7 @@ class Switch {
 public:
     int ID;
     double rate; // Mb/s
-    std::vector<Port*> port;
+    std::vector<SWPort*> port;
     std::map<int, int> routing_table; // Map Destination to Port
 
     Switch(int ID);

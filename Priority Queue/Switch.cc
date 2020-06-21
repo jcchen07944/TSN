@@ -22,7 +22,7 @@ Switch::Switch(int ID, int port_count) {
 }
 
 Switch::~Switch() {
-    for(int i = 0; i < port.size(); i++) {
+    for(size_t i = 0; i < port.size(); i++) {
         delete port[i];
     }
 }
@@ -38,7 +38,7 @@ void Switch::addNextHop(int port_num, Switch *sw, EndDevice *ed) {
 
 void Switch::setPortNum(int num) {
     for(int i = 0; i < num; i++)
-        port.push_back(new Port(rate));
+        port.push_back(new SWPort(rate));
 }
 
 void Switch::recievePacket(Packet* packet) {
@@ -59,7 +59,7 @@ void Switch::run() {
         }
     }
 
-    for(Port *p : port)
+    for(SWPort *p : port)
         p->run(_time);
 
     _time++;
