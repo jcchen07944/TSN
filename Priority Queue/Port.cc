@@ -37,13 +37,7 @@ void Port::run(long long time) {
     if(_pforward != nullptr) {
         if(time >= _tforward) {
         printf("%d\n", time);
-            // Forward packet to next hop
-            if(device == SWITCH) {
-                sw->recievePacket(_pforward);
-            }
-            else {
-                ed->recievePacket(_pforward);
-            }
+            // Forwarding finish
             _pforward = nullptr;
         }
     }
@@ -53,6 +47,12 @@ void Port::run(long long time) {
             if(t_queue[i]->size() != 0) {
                 // Dequeue packet and put to forwarding state
                 _pforward = t_queue[i]->front();
+                if(device == SWITCH) {
+                    sw->recievePacket(_pforward);
+                }
+                else {
+                    ed->recievePacket(_pforward);
+                }
                 _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                 t_queue[i]->pop();
                 break;
