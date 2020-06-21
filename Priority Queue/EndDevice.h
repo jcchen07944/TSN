@@ -27,7 +27,7 @@ public:
 
     void sendPacket(Packet* packet);
 
-    void recievePacket(Packet* packet);
+    void receivePacket(Packet* packet);
 
     void run();
 private:

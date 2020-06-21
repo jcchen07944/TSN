@@ -45,6 +45,8 @@ private:
 
 class EDPort : public Port {
 public:
+    std::queue<Packet*> buffer;
+
     EDPort(double rate);
 
     ~EDPort();

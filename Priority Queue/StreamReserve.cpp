@@ -41,11 +41,11 @@ int main() {
     ed[1]->sendPacket(packet);
 
     while(true) {
-        for(int i = 1; i <= SWITCH_COUNT; i++) {
-            sw[i]->run();
-        }
         for(int i = 1; i <= END_DEVICE_COUNT; i++) {
             ed[i]->run();
+        }
+        for(int i = 1; i <= SWITCH_COUNT; i++) {
+            sw[i]->run();
         }
     }
 

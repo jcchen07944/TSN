@@ -33,10 +33,10 @@ void SWPort::run(long long time) {
                 // Dequeue packet and put to forwarding state
                 _pforward = t_queue[i]->front();
                 if(device == SWITCH) {
-                    sw->recievePacket(_pforward);
+                    sw->receivePacket(_pforward);
                 }
                 else {
-                    ed->recievePacket(_pforward);
+                    ed->receivePacket(_pforward);
                 }
                 _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                 t_queue[i]->pop();

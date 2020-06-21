@@ -31,7 +31,7 @@ public:
 
     void setPortNum(int num);
 
-    void recievePacket(Packet* packet);
+    void receivePacket(Packet* packet);
 
     void run();
 private:

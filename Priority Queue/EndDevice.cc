@@ -22,11 +22,10 @@ void EndDevice::addNextHop(Switch *sw) {
 }
 
 void EndDevice::sendPacket(Packet* packet) {
-    sw->recievePacket(packet);
-
+    port->buffer.push(packet);
 }
 
-void EndDevice::recievePacket(Packet* packet) {
+void EndDevice::receivePacket(Packet* packet) {
     std::pair<long long, Packet*> *fpacket = new std::pair<long long, Packet*>();
     fpacket->first = _time + (int)floor((double)packet->p_size / rate / us * 100.0d);
     fpacket->second = packet;
@@ -34,6 +33,7 @@ void EndDevice::recievePacket(Packet* packet) {
 }
 
 void EndDevice::run() {
+    // Receive
     for(int i = _pforward.size() - 1; i >= 0; i--) {
         std::pair<long long, Packet*> *fpacket = _pforward[i];
         if(_time >= fpacket->first) {
@@ -47,6 +47,8 @@ void EndDevice::run() {
             delete fpacket;
         }
     }
+
+    port->run(_time);
 
     _time++;
 }

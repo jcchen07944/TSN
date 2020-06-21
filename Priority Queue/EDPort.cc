@@ -20,9 +20,18 @@ void EDPort::run(long long time) {
         if(time >= _tforward) {
             // Forwarding finish
             _pforward = nullptr;
+
+            // Statistic
+            printf("%d\n", time);
         }
     }
     if(_pforward == nullptr) {
+        // Dequeue packet and put to forwarding state
+        _pforward = buffer.front();
 
+        sw->receivePacket(_pforward);
+
+        _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
+        buffer.pop();
     }
 }

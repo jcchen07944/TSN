@@ -41,7 +41,7 @@ void Switch::setPortNum(int num) {
         port.push_back(new SWPort(rate));
 }
 
-void Switch::recievePacket(Packet* packet) {
+void Switch::receivePacket(Packet* packet) {
     std::pair<long long, Packet*> *fpacket = new std::pair<long long, Packet*>();
     fpacket->first = _time + (int)floor((double)packet->p_size / rate / us * 100.0d);
     fpacket->second = packet;
