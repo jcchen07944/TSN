@@ -40,7 +40,7 @@ void EndDevice::run() {
             Packet *packet = fpacket->second;
 
             // Statistic
-            printf("%d\n", _time);
+            printf("EndDevice %d receive packet %d at %d\n", ID, packet->packet_id, _time);
             delete packet;
 
             _pforward.erase(_pforward.begin() + i);

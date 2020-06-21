@@ -31,22 +31,47 @@ int main() {
     ed[1]->addNextHop(sw[1]);
     ed[2]->addNextHop(sw[1]);
 
-    Packet *packet = new Packet();
-    packet->p_size = 1500 * byte;
-    packet->p_priority = 0;
-    packet->p_flow_id = 1;
-    packet->source = 1;
-    packet->destination = 2;
+    Packet *BE = new Packet();
+    BE->p_size = 1542 * byte;
+    BE->p_priority = 0;
+    BE->p_flow_id = 0;
+    BE->source = 1;
+    BE->destination = 2;
 
-    ed[1]->sendPacket(packet);
+    Packet *TSN1 = new Packet();
+    TSN1->p_size = 128 * byte;
+    TSN1->p_priority = 0;
+    TSN1->p_flow_id = 1;
+    TSN1->source = 1;
+    TSN1->destination = 2;
 
-    while(true) {
+    Packet *TSN2 = new Packet();
+    TSN2->p_size = 64 * byte;
+    TSN2->p_priority = 0;
+    TSN2->p_flow_id = 2;
+    TSN2->source = 1;
+    TSN2->destination = 2;
+
+    long long int time = 0;
+
+    while(time < 1000000) { // 0.01 second
+        if(time % 100000 == 0)
+            ed[1]->sendPacket(BE);
+
+        if(time % 20000 == 0)
+            ed[1]->sendPacket(TSN2);
+
+        if(time % 15000 == 0)
+            ed[1]->sendPacket(TSN1);
+
         for(int i = 1; i <= END_DEVICE_COUNT; i++) {
             ed[i]->run();
         }
         for(int i = 1; i <= SWITCH_COUNT; i++) {
             sw[i]->run();
         }
+
+        time++;
     }
 
     return 0;
