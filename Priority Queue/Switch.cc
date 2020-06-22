@@ -27,14 +27,14 @@ Switch::~Switch() {
     }
 }
 
-void Switch::addNextHop(int port_num, Switch *sw, EndDevice *ed) {
-    if(sw != nullptr) {
-        port[port_num]->addDevice(sw);
-    }
-    else {
-        port[port_num]->addDevice(ed);
-    }
+void Switch::addNextHop(int port_num, Switch *sw) {
+    port[port_num]->addDevice(sw);
 }
+
+void Switch::addNextHop(int port_num, EndDevice *ed) {
+    port[port_num]->addDevice(ed);
+}
+
 
 void Switch::setPortNum(int num) {
     for(int i = 0; i < num; i++)

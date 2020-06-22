@@ -27,7 +27,9 @@ public:
 
     ~Switch();
 
-    void addNextHop(int port_num, Switch *sw, EndDevice *ed);
+    void addNextHop(int port_num, Switch *sw);
+
+    void addNextHop(int port_num, EndDevice *ed);
 
     void setPortNum(int num);
 
