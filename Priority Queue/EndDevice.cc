@@ -40,7 +40,12 @@ void EndDevice::run() {
             Packet *packet = fpacket->second;
 
             // Statistic
-            printf("EndDevice %d receive packet %d at %d\n", ID, packet->packet_id, _time);
+            double latency = (double)(_time - packet->send_time) / 100.0d;
+            //printf("EndDevice %d receive flow %d at %lld, latency : %.2f\n", ID, packet->p_flow_id, _time, latency);
+            if(packet->deadline < latency) {
+                printf("**Over deadline**\n");
+                printf("EndDevice %d receive flow %d at %lld, latency : %.2f\n", ID, packet->p_flow_id, _time, latency);
+            }
             delete packet;
 
             _pforward.erase(_pforward.begin() + i);

@@ -117,7 +117,7 @@ bool Port::isAccepted(Flow *flow) {
 
     for(std::pair<Flow*, Accumulate*> p : reserved_flows) {
         Flow *f = p.first;
-        double latency = computeLatency(f, UBS_MODE);
+        double latency = computeLatency(f, SP_MODE);
         double deadline;
         if(f->priority == 5)
             deadline = 2 * ms;
