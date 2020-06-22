@@ -9,7 +9,10 @@ public:
     int source; // Switch_ID
     int destination; // Switch_ID
 
-    int packet_id; // For statistic
+    /* For statistic */
+    int packet_id;
+    int deadline; // microsecond
+    long long int send_time;
 
     Packet();
 
