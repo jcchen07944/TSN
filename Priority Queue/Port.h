@@ -31,7 +31,15 @@ protected:
 
 class SWPort : public Port {
 public:
+    class Comparison {
+        public:
+            bool operator() (Packet *a, Packet *b) {
+                return (a->deadline > b->deadline);
+            }
+    };
+
     std::vector<std::queue<Packet*>*> t_queue;
+    std::vector<std::priority_queue<Packet*, std::vector<Packet*>, Comparison>*> t_priority_queue;
 
     SWPort(double rate);
 

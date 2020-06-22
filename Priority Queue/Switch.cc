@@ -54,7 +54,10 @@ void Switch::run() {
         if(_time >= fpacket->first) {
             Packet *packet = fpacket->second;
             //printf("Switch %d receive flow %d at %d\n", ID, packet->p_flow_id, _time);
-            port[routing_table[packet->destination]]->t_queue[packet->p_priority]->push(packet);
+            if(!priority_queue_enable)
+                port[routing_table[packet->destination]]->t_queue[packet->p_priority]->push(packet);
+            else
+                port[routing_table[packet->destination]]->t_priority_queue[packet->p_priority]->push(packet);
             _pforward.erase(_pforward.begin() + i);
             delete fpacket;
         }
