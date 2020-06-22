@@ -68,11 +68,7 @@ int main() {
 
     long long int time = 0;
 
-    int rd = rand()%1000;
-    long long int next_packet_send_time[12] =
-        {rand()%1000, rand()%1000, rand()%1000, rd
-        , rd, rd, rd, rd
-        , rd, rd, rd, rd};
+    long long int next_packet_send_time[12] = {rand()%1000};
     int packet_id[12] = {1};
 
     while(time < 100000000) { // 1 second
@@ -174,7 +170,7 @@ int main() {
             ed[8]->sendPacket(TSN2);
             next_packet_send_time[6] += (20000 + rd);
         }
-
+/*
         if(time == next_packet_send_time[7]) {
             Packet *TSN2 = new Packet();
             TSN2->p_size = 64 * byte;
@@ -244,7 +240,7 @@ int main() {
             ed[13]->sendPacket(TSN2);
             next_packet_send_time[11] += (20000 + rd);
         }
-
+*/
         for(int i = 1; i <= END_DEVICE_COUNT; i++) {
             ed[i]->run();
         }

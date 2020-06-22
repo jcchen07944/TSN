@@ -53,7 +53,7 @@ void Switch::run() {
         std::pair<long long, Packet*> *fpacket = _pforward[i];
         if(_time >= fpacket->first) {
             Packet *packet = fpacket->second;
-            //printf("Switch %d receive flow %d at %d\n", ID, packet->p_flow_id, _time);
+            //printf("Switch %d receive flow %d at %.2f\n", ID, packet->p_flow_id, _time / 100.0d);
             if(!priority_queue_enable)
                 port[routing_table[packet->destination]]->t_queue[packet->p_priority]->push(packet);
             else
