@@ -4,7 +4,9 @@
 #include "Port.h"
 #include "Constants.h"
 
-SWPort::SWPort(double rate) {
+SWPort::SWPort(int port_num, Switch *sw, double rate) {
+    this->port_num = port_num;
+    this->sw = sw;
     this->rate = rate;
 
     for(int i = 0; i < 8; i++) {
@@ -18,6 +20,10 @@ SWPort::SWPort(double rate) {
 
 SWPort::~SWPort() {
 
+}
+
+void SWPort::receivePacket(Packet* packet) {
+    sw->receivePacket(port_num, packet);
 }
 
 void SWPort::run(long long time) {
@@ -36,10 +42,10 @@ void SWPort::run(long long time) {
                     // Dequeue packet and put to forwarding state
                     _pforward = t_queue[i]->front();
                     if(device == SWITCH) {
-                        sw->receivePacket(_pforward);
+                        sw_port->receivePacket(_pforward);
                     }
                     else {
-                        ed->receivePacket(_pforward);
+                        ed_port->receivePacket(_pforward);
                     }
                     _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                     t_queue[i]->pop();
@@ -53,10 +59,10 @@ void SWPort::run(long long time) {
                 if(t_priority_queue[i]->size() != 0) {
                     _pforward = t_priority_queue[i]->top();
                     if(device == SWITCH) {
-                        sw->receivePacket(_pforward);
+                        sw_port->receivePacket(_pforward);
                     }
                     else {
-                        ed->receivePacket(_pforward);
+                        ed_port->receivePacket(_pforward);
                     }
                     _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                     t_priority_queue[i]->pop();

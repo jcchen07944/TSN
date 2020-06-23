@@ -5,16 +5,15 @@
 #include <utility>
 
 #include "Port.h"
-#include "Switch.h"
 #include "Packet.h"
 
 class EDPort;
-class Switch;
+class SWPort;
 
 class EndDevice {
 public:
     int ID;
-    Switch *sw;
+    SWPort *sw_port;
 
     EDPort *port = nullptr;
     double rate;
@@ -23,7 +22,9 @@ public:
 
     ~EndDevice();
 
-    void addNextHop(Switch *sw);
+    void connectNextHop(SWPort *sw_port);
+
+    EDPort* newPort();
 
     void sendPacket(Packet* packet);
 

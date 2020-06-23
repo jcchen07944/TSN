@@ -7,23 +7,26 @@
 #include "Switch.h"
 #include "EndDevice.h"
 
+class SWPort;
+class EDPort;
 class Switch;
-class EndDevice;
 
 class Port {
 public:
     int device;
-    Switch *sw;
-    EndDevice *ed;
+    SWPort *sw_port;
+    EDPort *ed_port;
     double rate;
 
     Port();
 
     ~Port();
 
-    void addDevice(Switch *sw);
+    void addDevice(SWPort *sw_port);
 
-    void addDevice(EndDevice *ed);
+    void addDevice(EDPort *ed_port);
+
+    void receivePacket(Packet* packet);
 protected:
     int SWITCH = 1;
     int END_DEVICE = 2;
@@ -32,16 +35,21 @@ protected:
 class SWPort : public Port {
 public:
     class Comparison {
-        public:
-            bool operator() (Packet *a, Packet *b) {
-                return (a->deadline > b->deadline);
-            }
+    public:
+        bool operator() (Packet *a, Packet *b) {
+            return (a->deadline > b->deadline);
+        }
     };
 
     std::vector<std::queue<Packet*>*> t_queue;
     std::vector<std::priority_queue<Packet*, std::vector<Packet*>, Comparison>*> t_priority_queue;
 
-    SWPort(double rate);
+    int port_num;
+    Switch *sw;
+
+    void receivePacket(Packet* packet);
+
+    SWPort(int port_num, Switch *sw, double rate);
 
     ~SWPort();
 
@@ -55,9 +63,13 @@ class EDPort : public Port {
 public:
     std::queue<Packet*> buffer;
 
-    EDPort(double rate);
+    EndDevice *ed;
+
+    EDPort(EndDevice *ed, double rate);
 
     ~EDPort();
+
+    void receivePacket(Packet* packet);
 
     void run(long long time);
 private:

@@ -11,6 +11,7 @@
 #include "Packet.h"
 
 class SWPort;
+class EDPort;
 class Flow;
 class EndDevice;
 
@@ -19,21 +20,19 @@ public:
     int ID;
     double rate; // Mb/s
     std::vector<SWPort*> port;
-    std::map<int, int> routing_table; // Map Destination to Port
+    std::map<int, int> routing_table; // Map Mac Address to Port
 
     Switch(int ID);
 
-    Switch(int ID, int port_count);
-
     ~Switch();
 
-    void addNextHop(int port_num, Switch *sw);
+    void connectNextHop(int port_num, SWPort *sw_port);
 
-    void addNextHop(int port_num, EndDevice *ed);
+    void connectNextHop(int port_num, EDPort *ed_port);
 
-    void setPortNum(int num);
+    SWPort* newPort();
 
-    void receivePacket(Packet* packet);
+    void receivePacket(int port_num, Packet* packet);
 
     void run();
 private:

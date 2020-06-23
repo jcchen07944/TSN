@@ -4,7 +4,8 @@
 #include "Port.h"
 #include "Constants.h"
 
-EDPort::EDPort(double rate) {
+EDPort::EDPort(EndDevice *ed, double rate) {
+    this->ed = ed;
     this->rate = rate;
 
     _pforward = nullptr;
@@ -13,6 +14,10 @@ EDPort::EDPort(double rate) {
 
 EDPort::~EDPort() {
 
+}
+
+void EDPort::receivePacket(Packet* packet) {
+    ed->receivePacket(packet);
 }
 
 void EDPort::run(long long time) {
@@ -27,7 +32,7 @@ void EDPort::run(long long time) {
             // Dequeue packet and put to forwarding state
             _pforward = buffer.front();
 
-            sw->receivePacket(_pforward);
+            sw_port->receivePacket(_pforward);
 
             _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
             _pforward->send_time = _tforward;

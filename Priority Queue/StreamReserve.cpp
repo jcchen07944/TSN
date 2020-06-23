@@ -10,7 +10,7 @@
 
 int main() {
     const int END_DEVICE_COUNT = 13;
-    const int SWITCH_COUNT = 1;
+    const int SWITCH_COUNT = 2;
 
     EndDevice *ed[END_DEVICE_COUNT + 1];
     for(int i = 1; i <= END_DEVICE_COUNT; i++) {
@@ -22,47 +22,53 @@ int main() {
         sw[i] = new Switch(i + END_DEVICE_COUNT);
     }
 
-    sw[1]->setPortNum(13);
-    sw[1]->routing_table[1] = 0; // EndDevice 1 -> port 0
-    sw[1]->routing_table[2] = 1; // EndDevice 2 -> port 1
-    sw[1]->routing_table[3] = 2; // EndDevice 3 -> port 2
-    sw[1]->routing_table[4] = 3; // EndDevice 4 -> port 3
-    sw[1]->routing_table[5] = 4; // EndDevice 5 -> port 4
-    sw[1]->routing_table[6] = 5; // EndDevice 6 -> port 5
-    sw[1]->routing_table[7] = 6; // EndDevice 7 -> port 6
-    sw[1]->routing_table[8] = 7; // EndDevice 8 -> port 7
-    sw[1]->routing_table[9] = 8; // EndDevice 9 -> port 8
-    sw[1]->routing_table[10] = 9; // EndDevice 10 -> port 9
-    sw[1]->routing_table[11] = 10; // EndDevice 11 -> port 10
-    sw[1]->routing_table[12] = 11; // EndDevice 12 -> port 11
-    sw[1]->routing_table[13] = 12; // EndDevice 13 -> port 12
+    for(int i = 1; i <= 6; i++) {
+        EDPort *ed_port = ed[i]->newPort();
+        SWPort *sw_port = sw[1]->newPort();
+        sw[1]->connectNextHop(sw_port->port_num, ed_port);
+        ed[i]->connectNextHop(sw_port);
+    }
 
-    sw[1]->addNextHop(0, ed[1]);
-    sw[1]->addNextHop(1, ed[2]);
-    sw[1]->addNextHop(2, ed[3]);
-    sw[1]->addNextHop(3, ed[4]);
-    sw[1]->addNextHop(4, ed[5]);
-    sw[1]->addNextHop(5, ed[6]);
-    sw[1]->addNextHop(6, ed[7]);
-    sw[1]->addNextHop(7, ed[8]);
-    sw[1]->addNextHop(8, ed[9]);
-    sw[1]->addNextHop(9, ed[10]);
-    sw[1]->addNextHop(10, ed[11]);
-    sw[1]->addNextHop(11, ed[12]);
-    sw[1]->addNextHop(12, ed[13]);
-    ed[1]->addNextHop(sw[1]);
-    ed[2]->addNextHop(sw[1]);
-    ed[3]->addNextHop(sw[1]);
-    ed[4]->addNextHop(sw[1]);
-    ed[5]->addNextHop(sw[1]);
-    ed[6]->addNextHop(sw[1]);
-    ed[7]->addNextHop(sw[1]);
-    ed[8]->addNextHop(sw[1]);
-    ed[9]->addNextHop(sw[1]);
-    ed[10]->addNextHop(sw[1]);
-    ed[11]->addNextHop(sw[1]);
-    ed[12]->addNextHop(sw[1]);
-    ed[13]->addNextHop(sw[1]);
+    SWPort *sw_port1 = sw[1]->newPort();
+    SWPort *sw_port2 = sw[2]->newPort();
+    sw[1]->connectNextHop(sw_port1->port_num, sw_port2);
+    sw[2]->connectNextHop(sw_port2->port_num, sw_port1);
+
+    for(int i = 7; i <= END_DEVICE_COUNT; i++) {
+        EDPort *ed_port = ed[i]->newPort();
+        SWPort *sw_port = sw[2]->newPort();
+        sw[2]->connectNextHop(sw_port->port_num, ed_port);
+        ed[i]->connectNextHop(sw_port);
+    }
+
+    /* Mac Address Table */
+
+    for(int i = 1; i <= END_DEVICE_COUNT; i++) {
+        Packet *broadcast_packet = new Packet();
+        broadcast_packet->source = i;
+        broadcast_packet->broadcast = true;
+        ed[i]->sendPacket(broadcast_packet);
+    }
+
+    long long int time = 0;
+    while(time++ < 10000) {
+        for(int i = 1; i <= END_DEVICE_COUNT; i++) {
+            ed[i]->run();
+        }
+
+        for(int i = 1; i <= SWITCH_COUNT; i++) {
+            sw[i]->run();
+        }
+    }
+
+    for(auto it = sw[1]->routing_table.cbegin(); it != sw[1]->routing_table.cend(); it++) {
+        printf("%d, %d\n", it->first, it->second);
+    }
+
+    for(auto it = sw[2]->routing_table.cbegin(); it != sw[2]->routing_table.cend(); it++) {
+        printf("%d, %d\n", it->first, it->second);
+    }
+    /*
 
     srand(time(NULL));
 
@@ -170,7 +176,7 @@ int main() {
             ed[8]->sendPacket(TSN2);
             next_packet_send_time[6] += (20000 + rd);
         }
-/*
+
         if(time == next_packet_send_time[7]) {
             Packet *TSN2 = new Packet();
             TSN2->p_size = 64 * byte;
@@ -240,7 +246,7 @@ int main() {
             ed[13]->sendPacket(TSN2);
             next_packet_send_time[11] += (20000 + rd);
         }
-*/
+
         for(int i = 1; i <= END_DEVICE_COUNT; i++) {
             ed[i]->run();
         }
@@ -250,6 +256,6 @@ int main() {
         }
         time++;
     }
-
+*/
     return 0;
 }

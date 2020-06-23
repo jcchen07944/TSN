@@ -6,19 +6,23 @@
 EndDevice::EndDevice(int ID) {
     _time = 0;
     rate = link_speed;
-    port = new EDPort(rate);
+    port = new EDPort(this, rate);
 
     this->ID = ID;
-    sw = nullptr;
+    sw_port = nullptr;
 }
 
 EndDevice::~EndDevice() {
     delete port;
 }
 
-void EndDevice::addNextHop(Switch *sw) {
-    this->sw = sw;
-    port->addDevice(sw);
+void EndDevice::connectNextHop(SWPort *sw_port) {
+    this->sw_port = sw_port;
+    port->addDevice(sw_port);
+}
+
+EDPort* EndDevice::newPort() {
+    return port;
 }
 
 void EndDevice::sendPacket(Packet* packet) {
@@ -26,6 +30,9 @@ void EndDevice::sendPacket(Packet* packet) {
 }
 
 void EndDevice::receivePacket(Packet* packet) {
+    if(packet->broadcast)
+        return;
+
     std::pair<long long, Packet*> *fpacket = new std::pair<long long, Packet*>();
     fpacket->first = _time + (int)floor((double)packet->p_size / rate / us * 100.0d);
     fpacket->second = packet;
