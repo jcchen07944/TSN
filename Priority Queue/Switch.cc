@@ -51,7 +51,7 @@ void Switch::receivePacket(int port_num, Packet* packet) {
 void Switch::run() {
     for(int i = _pforward.size() - 1; i >= 0; i--) {
         std::pair<long long, Packet*> *fpacket = _pforward[i];
-        if(_time >= fpacket->first) {
+        if(_time >= fpacket->first) { // Receive packet
             Packet *packet = fpacket->second;
             //printf("Switch %d receive flow %d at %.2f\n", ID, packet->p_flow_id, _time / 100.0d);
             if(!priority_queue_enable) {

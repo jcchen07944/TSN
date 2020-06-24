@@ -1,73 +1,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <vector>
 
 #include "Switch.h"
 #include "EndDevice.h"
 #include "Flow.h"
 #include "Constants.h"
 #include "Packet.h"
+#include "Utility.h"
 
 int main() {
-    const int END_DEVICE_COUNT = 13;
-    const int SWITCH_COUNT = 2;
+    Utility utility;
 
-    EndDevice *ed[END_DEVICE_COUNT + 1];
-    for(int i = 1; i <= END_DEVICE_COUNT; i++) {
-        ed[i] = new EndDevice(i);
-    }
+    const int END_DEVICE_COUNT = 10;
+    const int SWITCH_COUNT = 4;
 
-    Switch *sw[SWITCH_COUNT + 1];
-    for(int i = 1; i <= SWITCH_COUNT; i++) {
-        sw[i] = new Switch(i + END_DEVICE_COUNT);
-    }
+    std::vector<EndDevice*> ed;
+    std::vector<Switch*> sw;
 
-    for(int i = 1; i <= 6; i++) {
-        EDPort *ed_port = ed[i]->newPort();
-        SWPort *sw_port = sw[1]->newPort();
-        sw[1]->connectNextHop(sw_port->port_num, ed_port);
-        ed[i]->connectNextHop(sw_port);
-    }
+    for(int i = 0; i < END_DEVICE_COUNT; i++)
+        ed.push_back(new EndDevice(i));
 
-    SWPort *sw_port1 = sw[1]->newPort();
-    SWPort *sw_port2 = sw[2]->newPort();
-    sw[1]->connectNextHop(sw_port1->port_num, sw_port2);
-    sw[2]->connectNextHop(sw_port2->port_num, sw_port1);
+    for(int i = 0; i < SWITCH_COUNT; i++)
+        sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
-    for(int i = 7; i <= END_DEVICE_COUNT; i++) {
-        EDPort *ed_port = ed[i]->newPort();
-        SWPort *sw_port = sw[2]->newPort();
-        sw[2]->connectNextHop(sw_port->port_num, ed_port);
-        ed[i]->connectNextHop(sw_port);
-    }
+    for(int i = 0; i < END_DEVICE_COUNT / 2; i++)
+        utility.connectToSwitch(sw[0], ed[i]);
 
-    /* Mac Address Table */
+    for(int i = END_DEVICE_COUNT / 2; i < END_DEVICE_COUNT; i++)
+        utility.connectToSwitch(sw[1], ed[i]);
 
-    for(int i = 1; i <= END_DEVICE_COUNT; i++) {
-        Packet *broadcast_packet = new Packet();
-        broadcast_packet->source = i;
-        broadcast_packet->broadcast = true;
-        ed[i]->sendPacket(broadcast_packet);
-    }
+    utility.connectToSwitch(sw[0], sw[1]);
+    utility.connectToSwitch(sw[0], sw[2]);
+    utility.connectToSwitch(sw[0], sw[3]);
+    utility.connectToSwitch(sw[1], sw[2]);
+    utility.connectToSwitch(sw[1], sw[3]);
 
-    long long int time = 0;
-    while(time++ < 10000) {
-        for(int i = 1; i <= END_DEVICE_COUNT; i++) {
-            ed[i]->run();
-        }
-
-        for(int i = 1; i <= SWITCH_COUNT; i++) {
-            sw[i]->run();
-        }
-    }
-
-    for(auto it = sw[1]->routing_table.cbegin(); it != sw[1]->routing_table.cend(); it++) {
-        printf("%d, %d\n", it->first, it->second);
-    }
-
-    for(auto it = sw[2]->routing_table.cbegin(); it != sw[2]->routing_table.cend(); it++) {
-        printf("%d, %d\n", it->first, it->second);
-    }
+    utility.broadcastEndDevice(sw, ed);
     /*
 
     srand(time(NULL));
