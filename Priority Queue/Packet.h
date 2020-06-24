@@ -12,10 +12,13 @@ public:
     /* For statistic */
     int packet_id;
     int deadline; // microsecond
-    long long int send_time;
+    long long send_time;
 
     /* For Mac Address Table */
     bool broadcast;
+
+    /* For Priority Queue(STL priority_queue is not stable) */
+    long long sequence_number;
 
     Packet();
 

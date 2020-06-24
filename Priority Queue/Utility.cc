@@ -30,14 +30,15 @@ void Utility::broadcastEndDevice(std::vector<Switch*> sw, std::vector<EndDevice*
         broadcast_packet->source = ed[i]->ID;
         broadcast_packet->broadcast = true;
         ed[i]->sendPacket(broadcast_packet);
-        long long int time = 0;
-        while(time++ < 100) {
+
+    }
+    long long int time = 0;
+        while(time++ < 10000) {
             for(size_t i = 0; i < ed.size(); i++)
                 ed[i]->run();
             for(size_t i = 0; i < sw.size(); i++)
                 sw[i]->run();
         }
-    }
 
     // Debug
     for(size_t i = 0; i < sw.size(); i++) {

@@ -38,6 +38,8 @@ public:
 private:
     long long _time; // Time in 1/100 microsecond
 
+    long long _accumulate_sequence_number; // For Priority Queue(STL priority_queue is not stable)
+
     std::vector<std::pair<long long, Packet*>*> _pforward; // Packet forwarding
 };
 

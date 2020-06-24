@@ -7,6 +7,7 @@
 
 Switch::Switch(int ID) {
     _time = 0;
+    _accumulate_sequence_number = 0;
 
     this->ID = ID;
     rate = link_speed;
@@ -72,13 +73,16 @@ void Switch::run() {
                     for(int i = 0; i < port.size(); i++) {
                         if(i != routing_table[packet->source]) {
                             Packet *newPacket = new Packet(packet);
+                            newPacket->sequence_number = _accumulate_sequence_number++;
                             port[i]->t_priority_queue[packet->p_priority]->push(newPacket);
                         }
                     }
                     delete packet;
                 }
-                else
+                else {
+                    packet->sequence_number = _accumulate_sequence_number++;
                     port[routing_table[packet->destination]]->t_priority_queue[packet->p_priority]->push(packet);
+                }
             }
             _pforward.erase(_pforward.begin() + i);
             delete fpacket;

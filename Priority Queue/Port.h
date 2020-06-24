@@ -35,6 +35,8 @@ public:
     class Comparison {
     public:
         bool operator() (Packet *a, Packet *b) {
+            if(a->deadline == b->deadline)
+                return (a->sequence_number > b->sequence_number);
             return (a->deadline > b->deadline);
         }
     };
