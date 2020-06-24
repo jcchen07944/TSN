@@ -6,20 +6,16 @@ public:
     int ID;
     int priority;       // 0~7
     int burst_size;     // bit
-    int packet_length;  // bit
-    double burst_interval; // second
-
-    int *route;
-    int next_route = 0;
-    int hop_count = 0;
+    int packet_size;  // bit
+    double period; // second
+    double deadline;
+    int source; // Mac Address
+    int destination; // Mac Address
 
     Flow(int ID);
 
     ~Flow();
 
-    void nextHop();
-
-    void restartRoute();
 private:
 };
 

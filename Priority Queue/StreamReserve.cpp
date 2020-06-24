@@ -13,8 +13,8 @@
 int main() {
     Utility utility;
 
-    const int END_DEVICE_COUNT = 10;
-    const int SWITCH_COUNT = 4;
+    const int END_DEVICE_COUNT = 5;
+    const int SWITCH_COUNT = 2;
 
     std::vector<EndDevice*> ed;
     std::vector<Switch*> sw;
@@ -25,26 +25,39 @@ int main() {
     for(int i = 0; i < SWITCH_COUNT; i++)
         sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
-    for(int i = 0; i < END_DEVICE_COUNT / 2; i++)
+    for(int i = 0; i < 4; i++)
         utility.connectToSwitch(sw[0], ed[i]);
 
-    for(int i = END_DEVICE_COUNT / 2; i < END_DEVICE_COUNT; i++)
+    for(int i = 4; i < END_DEVICE_COUNT; i++)
         utility.connectToSwitch(sw[1], ed[i]);
 
     utility.connectToSwitch(sw[0], sw[1]);
-    utility.connectToSwitch(sw[0], sw[2]);
-    utility.connectToSwitch(sw[0], sw[3]);
-    utility.connectToSwitch(sw[1], sw[2]);
-    utility.connectToSwitch(sw[1], sw[3]);
 
     utility.broadcastEndDevice(sw, ed);
-    /*
+
+
+    int TSN_FLOW_COUNT = 2;
+    int AVB_FLOW_COUNT = 6;
+    std::vector<Flow*> TSN;
+    std::vector<Flow*> AVB;
+    for(int i = 0; i < TSN_FLOW_COUNT; i++) {
+        TSN.push_back(new Flow(i));
+        TSN[i]->burst_size = TSN[i]->packet_size = (rand() % 1499 + 1) * byte;
+        int tmp = rand() % 3;
+        TSN[i]->deadline = TSN[i]->period = (tmp == 0? 100*us: (tmp == 1? 200*us : 250*us);
+        TSN[i]->source =
+        TSN[i]->
+    }
+    for(int i = 0; i < AVB_FLOW_COUNT; i++)
+        AVB.push_back(new Flow(i + TSN_FLOW_COUNT));
+
+
 
     srand(time(NULL));
 
-    long long int time = 0;
+    long long time = 0;
 
-    long long int next_packet_send_time[12] = {rand()%1000};
+    long long next_packet_send_time[12] = {rand()%1000};
     int packet_id[12] = {1};
 
     while(time < 100000000) { // 1 second
@@ -90,142 +103,15 @@ int main() {
             next_packet_send_time[2] += (15000 + rand()%2000 - 1000);
         }
 
-        int rd = rand()%2000 - 1000;
-        if(time == next_packet_send_time[3]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 4;
-            TSN2->source = 5;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[3]++;
-            TSN2->deadline = 200;
-            ed[5]->sendPacket(TSN2);
-            next_packet_send_time[3] += (20000 + rd);
-        }
-
-        if(time == next_packet_send_time[4]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 5;
-            TSN2->source = 6;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[4]++;
-            TSN2->deadline = 200;
-            ed[6]->sendPacket(TSN2);
-            next_packet_send_time[4] += (20000 + rd);
-        }
-
-        if(time == next_packet_send_time[5]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 6;
-            TSN2->source = 7;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[5]++;
-            TSN2->deadline = 200;
-            ed[7]->sendPacket(TSN2);
-            next_packet_send_time[5] += (20000 + rd);
-        }
-
-        if(time == next_packet_send_time[6]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 7;
-            TSN2->source = 8;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[6]++;
-            TSN2->deadline = 200;
-            ed[8]->sendPacket(TSN2);
-            next_packet_send_time[6] += (20000 + rd);
-        }
-
-        if(time == next_packet_send_time[7]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 8;
-            TSN2->source = 9;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[7]++;
-            TSN2->deadline = 200;
-            ed[9]->sendPacket(TSN2);
-            next_packet_send_time[7] += (20000 + rd);
-        }
-
-        if(time == next_packet_send_time[8]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 9;
-            TSN2->source = 10;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[8]++;
-            TSN2->deadline = 200;
-            ed[10]->sendPacket(TSN2);
-            next_packet_send_time[8] += (20000 + rd);
-        }
-
-        if(time == next_packet_send_time[9]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 10;
-            TSN2->source = 11;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[9]++;
-            TSN2->deadline = 200;
-            ed[11]->sendPacket(TSN2);
-            next_packet_send_time[9] += (20000 + rd);
-        }
-
-        if(time == next_packet_send_time[10]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 11;
-            TSN2->source = 12;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[10]++;
-            TSN2->deadline = 200;
-            ed[12]->sendPacket(TSN2);
-            next_packet_send_time[10] += (20000 + rd);
-        }
-
-        if(time == next_packet_send_time[11]) {
-            Packet *TSN2 = new Packet();
-            TSN2->p_size = 64 * byte;
-            TSN2->p_priority = 7;
-            TSN2->p_flow_id = 12;
-            TSN2->source = 13;
-            TSN2->destination = 1;
-            //TSN2->send_time = time;
-            TSN2->packet_id = packet_id[11]++;
-            TSN2->deadline = 200;
-            ed[13]->sendPacket(TSN2);
-            next_packet_send_time[11] += (20000 + rd);
-        }
-
-        for(int i = 1; i <= END_DEVICE_COUNT; i++) {
+        for(int i = 0; i < END_DEVICE_COUNT; i++) {
             ed[i]->run();
         }
 
-        for(int i = 1; i <= SWITCH_COUNT; i++) {
+        for(int i = 0; i < SWITCH_COUNT; i++) {
             sw[i]->run();
         }
         time++;
     }
-*/
+
     return 0;
 }
