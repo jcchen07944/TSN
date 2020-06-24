@@ -7,6 +7,16 @@ Packet::Packet() {
     broadcast = false;
 }
 
+Packet::Packet(Packet *packet) {
+    p_size = packet->p_size;
+    p_priority = packet->p_priority;
+    p_flow_id = packet->p_flow_id;
+    deadline = packet->deadline;
+    source = packet->source;
+    destination = packet->destination;
+    broadcast = packet->broadcast;
+}
+
 Packet::~Packet() {
 
 }

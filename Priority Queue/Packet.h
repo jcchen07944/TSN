@@ -19,6 +19,8 @@ public:
 
     Packet();
 
+    Packet(Packet *packet);
+
     ~Packet();
 
     void run();

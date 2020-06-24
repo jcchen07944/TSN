@@ -24,10 +24,3 @@ void Port::addDevice(EDPort *ed_port) {
     this->ed_port = ed_port;
     device = END_DEVICE;
 }
-
-void Port::receivePacket(Packet *packet) {
-    if(device == SWITCH)
-        sw_port->receivePacket(packet);
-    else
-        ed_port->receivePacket(packet);
-}

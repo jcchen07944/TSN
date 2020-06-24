@@ -37,11 +37,9 @@ void Switch::receivePacket(int port_num, Packet* packet) {
     if(packet->broadcast) {
         if(routing_table.find(packet->source) == routing_table.end()) {
             routing_table[packet->source] = port_num;
-            for(int i = 0; i < port.size(); i++)
-                if(i != port_num)
-                    port[i]->receivePacket(packet);
         }
-        return;
+        else
+            return;
     }
 
     std::pair<long long, Packet*> *fpacket = new std::pair<long long, Packet*>();
@@ -56,10 +54,32 @@ void Switch::run() {
         if(_time >= fpacket->first) {
             Packet *packet = fpacket->second;
             //printf("Switch %d receive flow %d at %.2f\n", ID, packet->p_flow_id, _time / 100.0d);
-            if(!priority_queue_enable)
-                port[routing_table[packet->destination]]->t_queue[packet->p_priority]->push(packet);
-            else
-                port[routing_table[packet->destination]]->t_priority_queue[packet->p_priority]->push(packet);
+            if(!priority_queue_enable) {
+                if(packet->broadcast) {
+                    for(int i = 0; i < port.size(); i++) {
+                        if(i != routing_table[packet->source]) {
+                            Packet *newPacket = new Packet(packet);
+                            port[i]->t_queue[packet->p_priority]->push(newPacket);
+                        }
+                    }
+                    delete packet;
+                }
+                else
+                    port[routing_table[packet->destination]]->t_queue[packet->p_priority]->push(packet);
+            }
+            else {
+                if(packet->broadcast) {
+                    for(int i = 0; i < port.size(); i++) {
+                        if(i != routing_table[packet->source]) {
+                            Packet *newPacket = new Packet(packet);
+                            port[i]->t_priority_queue[packet->p_priority]->push(newPacket);
+                        }
+                    }
+                    delete packet;
+                }
+                else
+                    port[routing_table[packet->destination]]->t_priority_queue[packet->p_priority]->push(packet);
+            }
             _pforward.erase(_pforward.begin() + i);
             delete fpacket;
         }

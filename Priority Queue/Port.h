@@ -25,8 +25,6 @@ public:
     void addDevice(SWPort *sw_port);
 
     void addDevice(EDPort *ed_port);
-
-    void receivePacket(Packet* packet);
 protected:
     int SWITCH = 1;
     int END_DEVICE = 2;
