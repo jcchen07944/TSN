@@ -48,3 +48,29 @@ void Utility::broadcastEndDevice(std::vector<Switch*> sw, std::vector<EndDevice*
         }
     }
 }
+
+void Utility::setupTSN(Flow *TSN, double period, int packet_size, int source, int destination, int start_time) {
+    TSN->deadline = TSN->period = period;
+    TSN->packet_size = TSN->burst_size = packet_size * byte;
+    TSN->source = source;
+    TSN->destination = destination;
+    TSN->priority = 7;
+    TSN->start_time = start_time;
+}
+
+void Utility::setupAVB(Flow *AVB, char SRClass, int packet_size, int source, int destination, int start_time) {
+    if(SRClass == 'A' || SRClass == 'a') {
+        AVB->deadline = 2000;
+        AVB->period = 125;
+        AVB->priority = 5;
+    }
+    else if(SRClass == 'B' || SRClass == 'b') {
+        AVB->deadline = 50000;
+        AVB->period = 250;
+        AVB->priority = 6;
+    }
+    AVB->packet_size = packet_size * byte;
+    AVB->source = source;
+    AVB->destination = destination;
+    AVB->start_time = start_time;
+}
