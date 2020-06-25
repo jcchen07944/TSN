@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-const bool priority_queue_enable = true;
+const bool priority_queue_enable = false;
 
 const double us = 0.000001;
 const double ms = 0.001;

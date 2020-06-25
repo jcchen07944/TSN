@@ -11,8 +11,8 @@ public:
 
     /* For statistic */
     int packet_id;
-    int deadline; // microsecond
-    long long send_time;
+    double deadline; // microsecond
+    long long send_time; // microsecond
 
     /* For Mac Address Table */
     bool broadcast;

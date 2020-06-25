@@ -57,7 +57,7 @@ void Switch::run() {
             //printf("Switch %d receive flow %d at %.2f\n", ID, packet->p_flow_id, _time / 100.0d);
             if(!priority_queue_enable) {
                 if(packet->broadcast) {
-                    for(int i = 0; i < port.size(); i++) {
+                    for(size_t i = 0; i < port.size(); i++) {
                         if(i != routing_table[packet->source]) {
                             Packet *newPacket = new Packet(packet);
                             port[i]->t_queue[packet->p_priority]->push(newPacket);
@@ -70,7 +70,7 @@ void Switch::run() {
             }
             else {
                 if(packet->broadcast) {
-                    for(int i = 0; i < port.size(); i++) {
+                    for(size_t i = 0; i < port.size(); i++) {
                         if(i != routing_table[packet->source]) {
                             Packet *newPacket = new Packet(packet);
                             newPacket->sequence_number = _accumulate_sequence_number++;

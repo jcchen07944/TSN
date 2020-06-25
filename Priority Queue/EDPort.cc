@@ -35,7 +35,7 @@ void EDPort::run(long long time) {
             sw_port->receivePacket(_pforward);
 
             _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
-            _pforward->send_time = _tforward;
+            _pforward->send_time = _tforward; // send time from first switch
             buffer.pop();
         }
     }

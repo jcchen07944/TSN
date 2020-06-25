@@ -6,10 +6,12 @@
 
 #include "Switch.h"
 #include "EndDevice.h"
+#include "Packet.h"
 
 class SWPort;
 class EDPort;
 class Switch;
+class EndDevice;
 
 class Port {
 public:
