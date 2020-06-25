@@ -43,52 +43,38 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             return;
     }
 
-    std::pair<long long, Packet*> *fpacket = new std::pair<long long, Packet*>();
-    fpacket->first = _time + (int)floor((double)packet->p_size / rate / us * 100.0d);
-    fpacket->second = packet;
-    _pforward.push_back(fpacket);
+    if(!priority_queue_enable) {
+        if(packet->broadcast) {
+            for(size_t i = 0; i < port.size(); i++) {
+                if((int)i != routing_table[packet->source]) {
+                    Packet *newPacket = new Packet(packet);
+                    port[i]->t_queue[packet->p_priority]->push(newPacket);
+                }
+            }
+            delete packet;
+        }
+        else
+            port[routing_table[packet->destination]]->t_queue[packet->p_priority]->push(packet);
+    }
+    else {
+        if(packet->broadcast) {
+            for(size_t i = 0; i < port.size(); i++) {
+                if((int)i != routing_table[packet->source]) {
+                    Packet *newPacket = new Packet(packet);
+                    newPacket->sequence_number = _accumulate_sequence_number++;
+                    port[i]->t_priority_queue[packet->p_priority]->push(newPacket);
+                }
+            }
+            delete packet;
+        }
+        else {
+            packet->sequence_number = _accumulate_sequence_number++;
+            port[routing_table[packet->destination]]->t_priority_queue[packet->p_priority]->push(packet);
+        }
+    }
 }
 
 void Switch::run() {
-    for(int i = _pforward.size() - 1; i >= 0; i--) {
-        std::pair<long long, Packet*> *fpacket = _pforward[i];
-        if(_time >= fpacket->first) { // Receive packet
-            Packet *packet = fpacket->second;
-            //printf("Switch %d receive flow %d at %.2f\n", ID, packet->p_flow_id, _time / 100.0d);
-            if(!priority_queue_enable) {
-                if(packet->broadcast) {
-                    for(size_t i = 0; i < port.size(); i++) {
-                        if(i != routing_table[packet->source]) {
-                            Packet *newPacket = new Packet(packet);
-                            port[i]->t_queue[packet->p_priority]->push(newPacket);
-                        }
-                    }
-                    delete packet;
-                }
-                else
-                    port[routing_table[packet->destination]]->t_queue[packet->p_priority]->push(packet);
-            }
-            else {
-                if(packet->broadcast) {
-                    for(size_t i = 0; i < port.size(); i++) {
-                        if(i != routing_table[packet->source]) {
-                            Packet *newPacket = new Packet(packet);
-                            newPacket->sequence_number = _accumulate_sequence_number++;
-                            port[i]->t_priority_queue[packet->p_priority]->push(newPacket);
-                        }
-                    }
-                    delete packet;
-                }
-                else {
-                    packet->sequence_number = _accumulate_sequence_number++;
-                    port[routing_table[packet->destination]]->t_priority_queue[packet->p_priority]->push(packet);
-                }
-            }
-            _pforward.erase(_pforward.begin() + i);
-            delete fpacket;
-        }
-    }
-
     for(SWPort *p : port)
         p->run(_time);
 

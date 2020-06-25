@@ -24,6 +24,7 @@ void EDPort::run(long long time) {
     if(_pforward != nullptr) {
         if(time >= _tforward) {
             // Forwarding finish
+            sw_port->receivePacket(_pforward);
             _pforward = nullptr;
         }
     }
@@ -31,11 +32,8 @@ void EDPort::run(long long time) {
         if(buffer.size() != 0) {
             // Dequeue packet and put to forwarding state
             _pforward = buffer.front();
-
-            sw_port->receivePacket(_pforward);
-
             _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
-            _pforward->send_time = _tforward; // send time from first switch
+            //_pforward->send_time = _tforward; // send time from first switch
             buffer.pop();
         }
     }
