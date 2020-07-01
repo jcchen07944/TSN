@@ -20,7 +20,13 @@ public:
     int ID;
     double rate; // Mb/s
     std::vector<SWPort*> port;
-    std::map<int, int> routing_table; // Map Mac Address to Port
+    std::map<int, int> routing_table; // <MAC, Port>
+
+    /* For Time-reservation */
+    std::vector<std::queue<Packet*> > time_slot;
+    double slot_duration; // microsecond
+    int cycle; // time slot number in a cycle
+    std::map<int, int> offset_table; // <flow_id, offset>
 
     Switch(int ID);
 

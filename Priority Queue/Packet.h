@@ -20,6 +20,11 @@ public:
     /* For Priority Queue(STL priority_queue is not stable) */
     long long sequence_number;
 
+    /* For Time-reservation */
+    bool talker_attribute;
+    double period; // microsecond
+    int acc_hop_count;
+
     Packet();
 
     Packet(Packet *packet);

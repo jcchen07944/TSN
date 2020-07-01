@@ -43,6 +43,10 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             return;
     }
 
+    if(packet->talker_attribute) {
+
+    }
+
     if(!priority_queue_enable) {
         if(packet->broadcast) {
             for(size_t i = 0; i < port.size(); i++) {
