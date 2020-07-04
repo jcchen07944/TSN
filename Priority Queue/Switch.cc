@@ -46,14 +46,24 @@ void Switch::receivePacket(int port_num, Packet* packet) {
 
     // Talker-Attribute : Find a time-slot
     if(packet->reservation_state == TALKER_ATTRIBUTE) {
-        int slots_per_period = packet->period / slot_duration; // Now assume that slots per period are int
+        int slots_per_period;
 
         // Extend cycle
         if(cycle % slots_per_period != 0) {
             Utility utility;
             int new_cycle = utility.lcm(cycle, slots_per_period);
+            for(auto& reserved_flow : reserved_table) {
+                slots_per_period = reserved_flow.second->period / slot_duration;
+                for(int j = cycle / slots_per_period; j < new_cycle / slots_per_period; j++) {
+                    int next_time_slot = j * slots_per_period + offset_table[reserved_flow.second->p_flow_id] + floor(reserved_flow.second->start_transmission_time / slot_duration);
+                    if(time_slot.find(next_time_slot) == time_slot.end())
+                        time_slot[next_time_slot] = 0;
+                    time_slot[next_time_slot] += reserved_flow.second->p_size;
+                }
+            }
         }
 
+        slots_per_period = packet->period / slot_duration; // Now assume that slots per period are int
         bool can_reserve = true;
         for(int i = 0; i < slots_per_period; i++) {
             for(int j = 0; j < cycle / slots_per_period; j++) {
