@@ -19,6 +19,10 @@ public:
 	void setupTSN(Flow *TSN, double period, int packet_size, int source, int destination, int start_time);
 
 	void setupAVB(Flow *AVB, char SRClass, int packet_size, int source, int destination, int start_time);
+
+	int gcd(int m, int n);
+
+	int lcm(int m, int n);
 };
 
 #endif

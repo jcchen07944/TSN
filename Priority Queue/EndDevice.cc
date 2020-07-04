@@ -31,16 +31,37 @@ void EndDevice::sendPacket(Packet* packet) {
 }
 
 void EndDevice::receivePacket(Packet* packet) {
-    if(packet->broadcast)
-        return;
+    if(packet->broadcast) {
 
-    // Statistic
-    double latency = (double)(_time - packet->send_time) / 100.0d;
-    //printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, _time / 100.0d, latency);
-    //if(packet->p_flow_id == 0)
-        if(packet->deadline < latency) {
-            printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, (_time / 100.0d), latency);
-        }
+    }
+    else if(packet->reservation_state == TALKER_ATTRIBUTE) {
+        double delay = (packet->acc_slot_count + 1) * slot_duration;
+        Packet *new_packet = new Packet(packet);
+        new_packet->source = packet->destination;
+        new_packet->destination = packet->source;
+        new_packet->acc_slot_count = packet->acc_slot_count;
+        if(delay > packet->deadline)
+            new_packet->reservation_state = LISTENER_REJECT;
+        else
+            new_packet->reservation_state = LISTENER_ACCEPT;
+        sendPacket(new_packet);
+    }
+    else if(packet->reservation_state == LISTENER_ACCEPT) {
+        // Reserve success
+    }
+    else if(packet->reservation_state == LISTENER_REJECT) {
+        // Reserve failed
+    }
+    else {
+        // Statistic
+        double latency = (double)(_time - packet->send_time) / 100.0d;
+        //printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, _time / 100.0d, latency);
+        //if(packet->p_flow_id == 0)
+            if(packet->deadline < latency) {
+                printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, (_time / 100.0d), latency);
+            }
+    }
+
     delete packet;
 }
 

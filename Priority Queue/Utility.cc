@@ -74,3 +74,16 @@ void Utility::setupAVB(Flow *AVB, char SRClass, int packet_size, int source, int
     AVB->destination = destination;
     AVB->start_time = start_time;
 }
+
+int Utility::gcd(int m, int n) {
+    while(n != 0) {
+        int r = m % n;
+        m = n;
+        n = r;
+    }
+    return m;
+}
+
+int Utility::lcm(int m, int n) {
+    return m * n / gcd(m, n);
+}

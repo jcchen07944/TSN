@@ -21,9 +21,10 @@ public:
     long long sequence_number;
 
     /* For Time-reservation */
-    bool talker_attribute;
+    int reservation_state; // TALKER_ATTRIBUTE, LISTENER_ACCEPT, LISTENER_REJECT
     double period; // microsecond
-    int acc_hop_count;
+    double start_transmission_time; // microsecond
+    int acc_slot_count;
 
     Packet();
 

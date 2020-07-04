@@ -23,10 +23,11 @@ public:
     std::map<int, int> routing_table; // <MAC, Port>
 
     /* For Time-reservation */
-    std::vector<std::queue<Packet*> > time_slot;
-    double slot_duration; // microsecond
+    std::vector<std::queue<Packet*> > offset_slot; // Reduce number of slots during switch running
     int cycle; // time slot number in a cycle
     std::map<int, int> offset_table; // <flow_id, offset>
+    std::map<int, int> time_slot; // <reserved_slot_number, packet_size(bit)>
+    std::map<int, Packet*> reserved_table; // <flow_id, flow_info>
 
     Switch(int ID);
 

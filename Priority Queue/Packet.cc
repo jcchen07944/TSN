@@ -5,6 +5,7 @@ Packet::Packet() {
     p_priority = 0;
     p_flow_id = -1;
     broadcast = false;
+    reservation_state = -1;
 }
 
 Packet::Packet(Packet *packet) {
@@ -15,6 +16,7 @@ Packet::Packet(Packet *packet) {
     source = packet->source;
     destination = packet->destination;
     broadcast = packet->broadcast;
+    reservation_state = packet->reservation_state;
 }
 
 Packet::~Packet() {
