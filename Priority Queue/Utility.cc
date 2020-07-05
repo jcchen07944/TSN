@@ -33,12 +33,12 @@ void Utility::broadcastEndDevice(std::vector<Switch*> sw, std::vector<EndDevice*
 
     }
     long long int time = 0;
-        while(time++ < 10000) {
-            for(size_t i = 0; i < ed.size(); i++)
-                ed[i]->run();
-            for(size_t i = 0; i < sw.size(); i++)
-                sw[i]->run();
-        }
+    while(time++ < 10000) {
+        for(size_t i = 0; i < ed.size(); i++)
+            ed[i]->run();
+        for(size_t i = 0; i < sw.size(); i++)
+            sw[i]->run();
+    }
 
     // Debug
     for(size_t i = 0; i < sw.size(); i++) {
@@ -56,6 +56,30 @@ void Utility::setupTSN(Flow *TSN, double period, int packet_size, int source, in
     TSN->destination = destination;
     TSN->priority = 7;
     TSN->start_time = start_time;
+}
+
+void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevice*> ed) {
+    Packet *talker_attribute = new Packet();
+    talker_attribute->reservation_state = TALKER_ATTRIBUTE;
+    talker_attribute->p_size = 42 * byte;
+    talker_attribute->p_flow_id = TSN->ID;
+    talker_attribute->source = TSN->source;
+    talker_attribute->destination = TSN->destination;
+    talker_attribute->packet_size = TSN->packet_size;
+    talker_attribute->period = TSN->period;
+    talker_attribute->deadline = TSN->deadline;
+    talker_attribute->start_transmission_time = TSN->start_time;
+    talker_attribute->p_priority = 0;
+
+    ed[TSN->source]->sendPacket(talker_attribute);
+
+    long long int time = 0;
+    while(time++ < 10000) {
+        for(size_t i = 0; i < ed.size(); i++)
+            ed[i]->run();
+        for(size_t i = 0; i < sw.size(); i++)
+            sw[i]->run();
+    }
 }
 
 void Utility::setupAVB(Flow *AVB, char SRClass, int packet_size, int source, int destination, int start_time) {

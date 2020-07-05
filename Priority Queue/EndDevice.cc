@@ -39,7 +39,10 @@ void EndDevice::receivePacket(Packet* packet) {
         Packet *new_packet = new Packet(packet);
         new_packet->source = packet->destination;
         new_packet->destination = packet->source;
+        new_packet->period = packet->period;
+        new_packet->packet_size = packet->packet_size;
         new_packet->acc_slot_count = packet->acc_slot_count;
+        new_packet->start_transmission_time = packet->start_transmission_time;
         if(delay > packet->deadline)
             new_packet->reservation_state = LISTENER_REJECT;
         else
@@ -48,9 +51,11 @@ void EndDevice::receivePacket(Packet* packet) {
     }
     else if(packet->reservation_state == LISTENER_ACCEPT) {
         // Reserve success
+        printf("Flow ID : %d, Accept\n", packet->p_flow_id);
     }
     else if(packet->reservation_state == LISTENER_REJECT) {
         // Reserve failed
+        printf("Flow ID : %d, Reject\n", packet->p_flow_id);
     }
     else {
         // Statistic

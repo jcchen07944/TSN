@@ -44,8 +44,8 @@ int main() {
     utility.broadcastEndDevice(sw, ed);
 
 
-    int TSN_FLOW_COUNT = 0;
-    int AVB_FLOW_COUNT = 1;
+    int TSN_FLOW_COUNT = 5;
+    int AVB_FLOW_COUNT = 0;
     std::vector<Flow*> TSN;
     std::vector<Flow*> AVB;
     for(int i = 0; i < TSN_FLOW_COUNT; i++)
@@ -53,25 +53,34 @@ int main() {
     for(int i = 0; i < AVB_FLOW_COUNT; i++)
         AVB.push_back(new Flow(i + TSN_FLOW_COUNT));
 
-    utility.setupAVB(AVB[0], 'A', 3200, 3, 2, 0); // 12.8%
-    //utility.setupAVB(AVB[1], 'A', 200, 6, 2, 0); // 12.8%
+    //utility.setupAVB(AVB[0], 'A', 3200, 3, 2, 0);
+    //utility.setupAVB(AVB[1], 'A', 200, 6, 2, 0);
 
-    //utility.setupTSN(TSN[0], 100, 200, 1, 2, 0); // 16%
-    //utility.setupTSN(TSN[1], 200, 250, 4, 2, 0); // 10%
-    //utility.setupTSN(TSN[2], 250, 450, 5, 2, 0); // 14.4%
-    //utility.setupTSN(TSN[4], 100, 350, 1, 2, 0); // 28%
-    //utility.setupTSN(TSN[5], 200, 300, 6, 2, 0);
+    utility.setupTSN(TSN[0], 120, 1600, 1, 2, 0);
+    utility.reserveTSN(TSN[0], sw, ed);
 
+    utility.setupTSN(TSN[1], 120, 1500, 1, 2, 0);
+    utility.reserveTSN(TSN[1], sw, ed);
+/*
+    utility.setupTSN(TSN[2], 120, 1000, 5, 2, 0);
+    utility.reserveTSN(TSN[2], sw, ed);
+
+    utility.setupTSN(TSN[3], 120, 1000, 1, 2, 0);
+    utility.reserveTSN(TSN[3], sw, ed);
+
+    utility.setupTSN(TSN[4], 120, 1500, 6, 2, 0);
+    utility.reserveTSN(TSN[4], sw, ed);
+*/
     srand(time(NULL));
 
     long long time = 0;
 
     while(time < 100000000) { // 1 second
-        for(int i = 0; i < TSN_FLOW_COUNT; i++)
+        /*for(int i = 0; i < TSN_FLOW_COUNT; i++)
             TSN[i]->run(ed[TSN[i]->source]);
         for(int i = 0; i < AVB_FLOW_COUNT; i++)
            AVB[i]->run(ed[AVB[i]->source]);
-
+*/
         for(int i = 0; i < END_DEVICE_COUNT; i++)
             ed[i]->run();
         for(int i = 0; i < SWITCH_COUNT; i++)

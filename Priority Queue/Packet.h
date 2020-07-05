@@ -25,6 +25,7 @@ public:
     double period; // microsecond
     double start_transmission_time; // microsecond
     int acc_slot_count;
+    int packet_size; // Value for talker attribute, not for transmission. (bits)
 
     Packet();
 
