@@ -15,8 +15,8 @@ Flow::~Flow() {
 
 void Flow::run(EndDevice *ed) {
     srand(time(NULL));
-    if(_time >= _next_packet_time) {
-        _next_packet_time += (period * 100 + rand()%2000 - 1000);
+    if(_time >= (_next_packet_time + start_time * 100)) {
+        _next_packet_time += period * 100;
         Packet *packet = new Packet();
         packet->deadline = deadline;
         packet->source = source;

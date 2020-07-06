@@ -10,7 +10,6 @@
 Switch::Switch(int ID) {
     _time = 0;
     _accumulate_sequence_number = 0;
-    cycle = 1;
 
     this->ID = ID;
     rate = link_speed;
@@ -38,6 +37,7 @@ SWPort* Switch::newPort() {
 }
 
 void Switch::receivePacket(int port_num, Packet* packet) {
+    // Spanning tree
     if(packet->broadcast) {
         if(routing_table.find(packet->source) == routing_table.end()) {
             routing_table[packet->source] = port_num;
@@ -46,79 +46,27 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             return;
     }
 
-    // Talker-Attribute : Find a time-slot
-    if(packet->reservation_state == TALKER_ATTRIBUTE) {
-        int slots_per_period = packet->period / slot_duration;
-
-        // Extend cycle
-        if(cycle % slots_per_period != 0) {
-            Utility utility;
-            int new_cycle = utility.lcm(cycle, slots_per_period);
-            for(auto& reserved_flow : reserved_table) {
-                slots_per_period = reserved_flow.second->period / slot_duration;
-                for(int j = cycle / slots_per_period; j < new_cycle / slots_per_period; j++) {
-                    int next_time_slot = j * slots_per_period + offset_table[reserved_flow.second->p_flow_id] + std::round(reserved_flow.second->start_transmission_time / slot_duration);
-                    if(time_slot.find(next_time_slot) == time_slot.end())
-                        time_slot[next_time_slot] = 0;
-                    time_slot[next_time_slot] += reserved_flow.second->packet_size;
+    /***********************/
+    /** Switch Processing **/
+    /***********************/
+    if(time_reservation_enable) {
+        if(packet->broadcast) {
+            for(size_t i = 0; i < port.size(); i++) {
+                if((int)i != routing_table[packet->source]) {
+                    Packet *newPacket = new Packet(packet);
+                    port[i]->be_queue.push(newPacket);
                 }
             }
-            cycle = new_cycle;
-        }
-
-        slots_per_period = packet->period / slot_duration; // Now assume that slots per period are int
-        bool can_reserve;
-        for(int i = 0; i < slots_per_period; i++) { // Maximum slot offset
-            can_reserve = true;
-            for(int j = 0; j < cycle / slots_per_period; j++) {
-                int next_time_slot = j * slots_per_period + (i + (int)std::round(packet->start_transmission_time / slot_duration)) % slots_per_period;
-                if(time_slot.find(next_time_slot) == time_slot.end())
-                    time_slot[next_time_slot] = 0;
-                //printf("%d %d\n", ID, next_time_slot);
-                if(time_slot[next_time_slot] + packet->packet_size > std::round((double)slot_duration * us * link_speed)) {
-                    can_reserve = false;
-                    break;
-                }
-            }
-            if(can_reserve) {
-                packet->acc_slot_count += (i + 1);
-                packet->start_transmission_time = (int)std::round(packet->start_transmission_time + (i + 1) * slot_duration) % (int)std::round(packet->period);
-                //printf("%d %.4f\n", ID, packet->start_transmission_time);
-                offset_table[packet->p_flow_id] = i;
-                break;
-            }
-        }
-        if(!can_reserve) {
-            Packet *new_packet = new Packet(packet);
-            new_packet->source = packet->destination;
-            new_packet->destination = packet->source;
-            new_packet->acc_slot_count = packet->acc_slot_count;
-            new_packet->reservation_state = LISTENER_REJECT;
-            port[routing_table[new_packet->destination]]->t_queue[new_packet->p_priority]->push(new_packet);
             delete packet;
-            return;
+        }
+        else if(port[routing_table[packet->destination]]->offset_table.find(packet->p_flow_id) == port[routing_table[packet->destination]]->offset_table.end()){
+            port[routing_table[packet->destination]]->be_queue.push(packet);
+        }
+        else {
+            port[routing_table[packet->destination]]->offset_slot[port[routing_table[packet->destination]]->offset_table[packet->p_flow_id] + port[routing_table[packet->destination]]->current_slot].push(packet);
         }
     }
-    // Listener Accept : Reserve
-    else if(packet->reservation_state == LISTENER_ACCEPT) {
-        packet->start_transmission_time = (int)std::round(packet->start_transmission_time - (offset_table[packet->p_flow_id] + 1) * slot_duration + (int)std::round(packet->period)) % (int)std::round(packet->period);
-        int slots_per_period = packet->period / slot_duration; // Now assume that slots per period are int
-        for(int i = 0; i < cycle / slots_per_period; i++) {
-            int next_time_slot = i * slots_per_period + offset_table[packet->p_flow_id] + floor(packet->start_transmission_time / slot_duration);
-            if(time_slot.find(next_time_slot) == time_slot.end())
-                time_slot[next_time_slot] = 0;
-            time_slot[next_time_slot] += packet->packet_size;
-            printf("%d %d\n", ID, next_time_slot);
-        }
-        Packet *new_packet = new Packet(packet);
-        reserved_table[packet->p_flow_id] = new_packet;
-    }
-    // Listener Reject : Resume
-    else if(packet->reservation_state == LISTENER_REJECT) {
-        offset_table.erase(packet->p_flow_id);
-    }
-
-    if(!priority_queue_enable) {
+    else if(!priority_queue_enable) {
         if(packet->broadcast) {
             for(size_t i = 0; i < port.size(); i++) {
                 if((int)i != routing_table[packet->source]) {

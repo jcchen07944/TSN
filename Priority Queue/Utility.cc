@@ -62,13 +62,14 @@ void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevi
     Packet *talker_attribute = new Packet();
     talker_attribute->reservation_state = TALKER_ATTRIBUTE;
     talker_attribute->p_size = 42 * byte;
-    talker_attribute->p_flow_id = TSN->ID;
+    talker_attribute->p_flow_id = -1;
     talker_attribute->source = TSN->source;
     talker_attribute->destination = TSN->destination;
     talker_attribute->packet_size = TSN->packet_size;
     talker_attribute->period = TSN->period;
     talker_attribute->deadline = TSN->deadline;
     talker_attribute->start_transmission_time = TSN->start_time;
+    talker_attribute->flow_id = TSN->ID;
     talker_attribute->p_priority = 0;
 
     ed[TSN->source]->sendPacket(talker_attribute);

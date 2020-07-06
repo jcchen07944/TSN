@@ -46,6 +46,16 @@ public:
     std::vector<std::queue<Packet*>*> t_queue;
     std::vector<std::priority_queue<Packet*, std::vector<Packet*>, Comparison>*> t_priority_queue;
 
+    /* For Time-reservation */
+    std::vector<std::queue<Packet*> > offset_slot; // Reduce number of slots during switch running
+    int current_slot;
+    std::queue<Packet*> be_queue;
+    int cycle; // time slot number in a cycle
+    std::map<int, int> offset_table; // <flow_id, offset>
+    std::map<int, int> time_slot; // <reserved_slot_number, packet_size(bit)>
+    std::map<int, Packet*> reserved_table; // <flow_id, flow_info>
+
+
     int port_num;
     Switch *sw;
 
@@ -59,6 +69,10 @@ public:
 private:
     Packet *_pforward; // Packet forwarding
     long long _tforward; // Forwarding time
+
+    bool reserveTimeSlot(Packet *packet);
+
+    void acceptTimeSlot(Packet *packet);
 };
 
 class EDPort : public Port {
