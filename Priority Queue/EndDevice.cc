@@ -10,6 +10,9 @@ EndDevice::EndDevice(int ID) {
 
     this->ID = ID;
     sw_port = nullptr;
+    max_latency = 0.0f;
+    acc_latency = 0.0f;
+    flow_cnt = 0;
 }
 
 EndDevice::~EndDevice() {
@@ -102,10 +105,14 @@ void EndDevice::receivePacket(Packet* packet) {
     // Statistic
     double latency = (double)(_time - packet->send_time) / 100.0d;
     printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, _time / 100.0d, latency);
-    //if(packet->p_flow_id == 0)
+    if(packet->p_flow_id != -1) {
+        max_latency = std::max(max_latency, latency);
+        acc_latency += latency;
+        flow_cnt++;
         if(packet->deadline < latency) {
             printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, (_time / 100.0d), latency);
         }
+    }
 
     delete packet;
 

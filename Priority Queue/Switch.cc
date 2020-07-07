@@ -63,7 +63,8 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             port[routing_table[packet->destination]]->be_queue.push(packet);
         }
         else {
-            port[routing_table[packet->destination]]->offset_slot[port[routing_table[packet->destination]]->offset_table[packet->p_flow_id] + port[routing_table[packet->destination]]->current_slot].push(packet);
+            int slot_num = port[routing_table[packet->destination]]->offset_table[packet->p_flow_id] + port[routing_table[packet->destination]]->current_slot + 1;
+            port[routing_table[packet->destination]]->offset_slot[slot_num % port[routing_table[packet->destination]]->offset_slot.size()].push(packet);
         }
     }
     else if(!priority_queue_enable) {

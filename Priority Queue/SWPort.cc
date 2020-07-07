@@ -40,7 +40,7 @@ void SWPort::receivePacket(Packet* packet) {
 }
 
 void SWPort::run(long long time) {
-    current_slot = time / slot_duration*100 % offset_slot.size();
+    current_slot = floor(time / (slot_duration*100) % offset_slot.size());
     if(_pforward != nullptr) {
         if(time >= _tforward) {
             // Forwarding finish
@@ -53,10 +53,10 @@ void SWPort::run(long long time) {
     }
     if(_pforward == nullptr) {
         if(time_reservation_enable) {
-            if(offset_slot[(current_slot + offset_slot.size() - 1) % offset_slot.size()].size() > 0) {
-                _pforward = offset_slot[time / slot_duration*100 % offset_slot.size()].front();
+            if(offset_slot[current_slot].size() > 0) {
+                _pforward = offset_slot[current_slot].front();
                 _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
-                offset_slot[time / slot_duration*100 % offset_slot.size()].pop();
+                offset_slot[current_slot].pop();
             }
             else if(be_queue.size() > 0) {
                 //printf("%f %f\n", ((double)be_queue.front()->p_size / rate / us * 100.0d + time) / (slot_duration*100), time / (slot_duration*100));
@@ -126,7 +126,7 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
             if(time_slot.find(next_time_slot) == time_slot.end())
                 time_slot[next_time_slot] = 0;
             //printf("%d\n", packet->start_transmission_time);
-            printf("%d %d %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
+            //printf("%d %d %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
             if(time_slot[next_time_slot] + packet->packet_size > std::round((double)slot_duration * us * link_speed)) {
                 can_reserve = false;
                 break;
@@ -162,7 +162,7 @@ void SWPort::acceptTimeSlot(Packet *packet) {
         if(time_slot.find(next_time_slot) == time_slot.end())
             time_slot[next_time_slot] = 0;
         time_slot[next_time_slot] += packet->packet_size;
-        printf("%d %d\n", sw->ID, next_time_slot);
+        //printf("%d %d\n", sw->ID, next_time_slot);
     }
     // Extend offset_slot (One slot for send and other slots for receive.)
     for(int i = offset_slot.size(); i < offset_table[packet->flow_id] + 2; i++) {

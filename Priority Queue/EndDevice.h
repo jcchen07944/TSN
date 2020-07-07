@@ -18,6 +18,10 @@ public:
     EDPort *port = nullptr;
     double rate;
 
+    double max_latency;
+    double acc_latency;
+    int flow_cnt;
+
     EndDevice(int ID);
 
     ~EndDevice();
@@ -33,6 +37,7 @@ public:
     void run();
 private:
     long long _time;
+
 
     std::vector<std::pair<long long, Packet*>*> _pforward; // Packet forwarding
 };

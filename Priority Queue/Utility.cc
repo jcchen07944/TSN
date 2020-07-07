@@ -59,6 +59,8 @@ void Utility::setupTSN(Flow *TSN, double period, int packet_size, int source, in
 }
 
 void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevice*> ed) {
+    if(!time_reservation_enable)
+        return;
     Packet *talker_attribute = new Packet();
     talker_attribute->reservation_state = TALKER_ATTRIBUTE;
     talker_attribute->p_size = 42 * byte;
@@ -98,6 +100,13 @@ void Utility::setupAVB(Flow *AVB, char SRClass, int packet_size, int source, int
     AVB->source = source;
     AVB->destination = destination;
     AVB->start_time = start_time;
+}
+
+void Utility::setupBE(Flow *BE, int packet_size, int source, int destination) {
+    BE->priority = 0;
+    BE->packet_size = packet_size * byte;
+    BE->source = source;
+    BE->destination = destination;
 }
 
 int Utility::gcd(int m, int n) {

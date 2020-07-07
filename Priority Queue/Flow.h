@@ -24,7 +24,7 @@ public:
 
     ~Flow();
 
-    void run(EndDevice *ed);
+    void run(EndDevice *ed, int flow_type);
 private:
     /* For packet sending */
     long long _next_packet_time;
