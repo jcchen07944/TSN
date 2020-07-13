@@ -58,6 +58,16 @@ void Utility::setupTSN(Flow *TSN, double period, int packet_size, int source, in
     TSN->start_time = start_time;
 }
 
+void Utility::setupTSN(Flow *TSN, double period, double deadline, int packet_size, int source, int destination, int start_time) {
+    TSN->deadline = deadline;
+    TSN->period = period;
+    TSN->packet_size = TSN->burst_size = packet_size * byte;
+    TSN->source = source;
+    TSN->destination = destination;
+    TSN->priority = 7;
+    TSN->start_time = start_time;
+}
+
 void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevice*> ed) {
     if(!time_reservation_enable)
         return;
@@ -120,4 +130,11 @@ int Utility::gcd(int m, int n) {
 
 int Utility::lcm(int m, int n) {
     return m * n / gcd(m, n);
+}
+
+void Utility::resetNetworkTime(std::vector<Switch*> sw, std::vector<EndDevice*> ed) {
+    for(size_t i = 0; i < ed.size(); i++)
+        ed[i]->resetTime();
+    for(size_t i = 0; i < sw.size(); i++)
+        sw[i]->resetTime();
 }

@@ -38,6 +38,8 @@ public:
     void receivePacket(int port_num, Packet* packet);
 
     void run();
+
+    void resetTime();
 private:
     long long _time; // Time in 1/100 microsecond
 

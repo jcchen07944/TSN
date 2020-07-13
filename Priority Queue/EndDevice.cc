@@ -29,6 +29,7 @@ EDPort* EndDevice::newPort() {
 }
 
 void EndDevice::sendPacket(Packet* packet) {
+    printf("%lld\n", _time);
     packet->send_time = _time;
     port->buffer.push(packet);
 }
@@ -121,4 +122,8 @@ void EndDevice::receivePacket(Packet* packet) {
 void EndDevice::run() {
     port->run(_time);
     _time++;
+}
+
+void EndDevice::resetTime() {
+    _time = 0;
 }

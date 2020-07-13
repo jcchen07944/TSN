@@ -63,6 +63,7 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             port[routing_table[packet->destination]]->be_queue.push(packet);
         }
         else {
+            //printf("Switch %d\n", ID);
             int slot_num = port[routing_table[packet->destination]]->offset_table[packet->p_flow_id] + port[routing_table[packet->destination]]->current_slot + 1;
             port[routing_table[packet->destination]]->offset_slot[slot_num % port[routing_table[packet->destination]]->offset_slot.size()].push(packet);
         }
@@ -103,4 +104,8 @@ void Switch::run() {
         p->run(_time);
 
     _time++;
+}
+
+void Switch::resetTime() {
+    _time = 0;
 }

@@ -35,6 +35,8 @@ public:
     void receivePacket(Packet* packet);
 
     void run();
+
+    void resetTime();
 private:
     long long _time;
 
