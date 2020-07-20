@@ -20,8 +20,9 @@ SWPort::SWPort(int port_num, Switch *sw, double rate) {
     _tforward = 0;
 
     cycle = 1;
-    std::queue<Packet*> slot;
-    offset_slot.push_back(slot);
+    std::priority_queue<Packet*, std::vector<Packet*>, TRComparison> new_queue;
+    scheduled_queue.push_back(new_queue);
+    gate_control_list.push_back(-1);
     current_slot = 0;
 }
 
@@ -40,7 +41,7 @@ void SWPort::receivePacket(Packet* packet) {
 }
 
 void SWPort::run(long long time) {
-    current_slot = floor(time / (slot_duration*100) % offset_slot.size());
+    current_slot = floor(time / (slot_duration*100) % cycle);
     if(_pforward != nullptr) {
         if(time >= _tforward) {
             // Forwarding finish
@@ -53,22 +54,35 @@ void SWPort::run(long long time) {
     }
     if(_pforward == nullptr) {
         if(time_reservation_enable) {
-            if(offset_slot[current_slot].size() > 0) {
-                _pforward = offset_slot[current_slot].front();
-                _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
-                offset_slot[current_slot].pop();
+            if(gate_control_list[current_slot] != -1) {
+                if(scheduled_queue[gate_control_list[current_slot]].size() != 0) {
+                    _pforward = scheduled_queue[gate_control_list[current_slot]].top();
+                    //printf("Switch %d, Flow %d, %.4f\n", sw->ID, _pforward->p_flow_id, time/100.0);
+                    _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
+                    scheduled_queue[gate_control_list[current_slot]].pop();
+                    return;
+                }
             }
-            else if(be_queue.size() > 0) {
+            if(be_queue.size() > 0) {
                 //printf("%f %f\n", ((double)be_queue.front()->p_size / rate / us * 100.0d + time) / (slot_duration*100), time / (slot_duration*100));
-                if(floor(((double)be_queue.front()->p_size / rate / us * 100.0d + time) / (slot_duration*100)) > floor(time / (slot_duration*100)))
+                int be_slot_count = 0;
+                for(int i = 1; i < cycle; i++) {
+                    if(gate_control_list[(current_slot + i) % cycle] != -1)
+                        break;
+                    be_slot_count++;
+                }
+                if(floor(((double)be_queue.front()->p_size / rate / us * 100.0d + time) / (slot_duration*100)) > floor(time / (slot_duration*100)) + be_slot_count)
                     return;
                 _pforward = be_queue.front();
                 if(_pforward->reservation_state == TALKER_ATTRIBUTE)
                     if(!reserveTimeSlot(_pforward))
-                        _pforward == nullptr;
+                        _pforward = nullptr;
                 _tforward = time + (double)be_queue.front()->p_size / rate / us * 100.0d;
                 be_queue.pop();
             }
+        }
+        else if(ats_enable) {
+
         }
         // Strict Priority
         // FIFO
@@ -104,39 +118,76 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
     if(cycle % slots_per_period != 0) {
         Utility utility;
         int new_cycle = utility.lcm(cycle, slots_per_period);
-        for(auto& reserved_flow : reserved_table) {
-            slots_per_period = reserved_flow.second->period / slot_duration;
-            for(int j = cycle / slots_per_period; j < new_cycle / slots_per_period; j++) {
-                int next_time_slot = j * slots_per_period + offset_table[reserved_flow.second->flow_id] + std::round(reserved_flow.second->start_transmission_time / slot_duration);
-                if(time_slot.find(next_time_slot) == time_slot.end())
-                    time_slot[next_time_slot] = 0;
-                time_slot[next_time_slot] += reserved_flow.second->packet_size;
+        for(int i = cycle; i < new_cycle; i++) {
+            if(time_slot.find(i - cycle) != time_slot.end()) {
+                time_slot[new_cycle] = time_slot[i - cycle];
+                gate_control_list.push_back(gate_control_list[i - cycle]);
             }
+            else
+                gate_control_list.push_back(-1);
         }
         cycle = new_cycle;
     }
 
-    // Find a time-slot
+    // Find time-slots
     slots_per_period = packet->period / slot_duration;
     bool can_reserve;
     for(int i = 0; i < slots_per_period; i++) { // Maximum slot offset
         can_reserve = true;
-        for(int j = 0; j < cycle / slots_per_period; j++) { // How many time-slot need to check
-            int next_time_slot = j * slots_per_period + (i + (int)floor((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration)) % slots_per_period;
-            if(time_slot.find(next_time_slot) == time_slot.end())
-                time_slot[next_time_slot] = 0;
-            //printf("%d\n", packet->start_transmission_time);
-            //printf("%d %d %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
-            if(time_slot[next_time_slot] + packet->packet_size > std::round((double)slot_duration * us * link_speed)) {
+        int old_slot_need = -1;
+        for(int j = 0; j < cycle / slots_per_period; j++) { // How many cycle need to check
+
+            int next_time_slot = j * slots_per_period + (i + (int)ceil((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
+            printf("%d %d %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
+            if(time_slot[next_time_slot] == (int)std::round((double)slot_duration * us * link_speed)) { // Reserve first time-slot
                 can_reserve = false;
                 break;
             }
+
+            int slot_need = (int)ceil((packet->packet_size - (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) / std::round((double)slot_duration * us * link_speed));
+            slot_need = slot_need < 0? 1 : slot_need+1;
+            //printf("%d\n", slot_need);
+            if(old_slot_need != -1 && old_slot_need != slot_need) { // Make sure the delay in every cycle are same.
+                can_reserve = false;
+                break;
+            }
+            old_slot_need = slot_need;
+
+            for(int k = 1; k < slot_need; k++) {
+                if(i + k > slots_per_period) { // If other time-slot exceed the period
+                    can_reserve = false;
+                    break;
+                }
+                else if(k != slot_need - 1) {
+                    if(time_slot.find(next_time_slot + k) != time_slot.end()) {
+                        if(time_slot[next_time_slot + k] != 0) {
+                            can_reserve = false;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    if(time_slot.find(next_time_slot + k) != time_slot.end()) {
+                        if(time_slot[next_time_slot + k] > packet->packet_size - k * (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) {
+                            can_reserve = false;
+                            break;
+                        }
+                    }
+                }
+            }
         }
         if(can_reserve) {
-            packet->acc_slot_count += (i + 1);
-            packet->start_transmission_time = packet->start_transmission_time + (i + 1)*slot_duration % (int)floor(packet->period);
-            //printf("%d %.4f\n", sw->ID, packet->start_transmission_time);
+            int next_time_slot = (i + (int)ceil((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
+            int slot_need = (int)ceil((packet->packet_size - (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) / std::round((double)slot_duration * us * link_speed));
+            slot_need = slot_need < 0? 1 : slot_need + 1;
+            //printf("%d %d\n", sw->ID, slot_need);
             offset_table[packet->flow_id] = i;
+            queue_table[packet->flow_id] = findAcceptQueueID(packet, i);
+            packet->acc_slot_count += (i + slot_need);
+            last_transmission_time = packet->start_transmission_time;
+            packet->start_transmission_time = packet->acc_slot_count*slot_duration;
+            //printf("%d %.4f\n", sw->ID, packet->start_transmission_time);
+            //printf("%d %d\n", sw->ID, packet->acc_slot_count);
             break;
         }
     }
@@ -155,20 +206,37 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
 }
 
 void SWPort::acceptTimeSlot(Packet *packet) {
-    packet->start_transmission_time = (int)floor(packet->start_transmission_time - (offset_table[packet->flow_id] + 1) * slot_duration + (int)floor(packet->period)) % (int)floor(packet->period);
+    packet->start_transmission_time = last_transmission_time;
+    //printf("%d %.4f\n", sw->ID, packet->start_transmission_time);
+
+    queue_table[packet->flow_id] = findAcceptQueueID(packet, offset_table[packet->flow_id]);
+    printf("%d %d\n", sw->ID, queue_table[packet->flow_id]);
+
     int slots_per_period = packet->period / slot_duration; // Now assume that slots per period are int
     for(int i = 0; i < cycle / slots_per_period; i++) { // How many time-slot need to check
-        int next_time_slot = i * slots_per_period + (offset_table[packet->flow_id] + (int)floor((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration)) % slots_per_period;
-        if(time_slot.find(next_time_slot) == time_slot.end())
-            time_slot[next_time_slot] = 0;
-        time_slot[next_time_slot] += packet->packet_size;
+        int next_time_slot = i * slots_per_period + (offset_table[packet->flow_id] + (int)ceil((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
+
         //printf("%d %d\n", sw->ID, next_time_slot);
-    }
-    // Extend offset_slot (One slot for send and other slots for receive.)
-    for(int i = offset_slot.size(); i < offset_table[packet->flow_id] + 2; i++) {
-        std::queue<Packet*> slot;
-        //printf("%d\n", offset_table[packet->flow_id]);
-        offset_slot.push_back(slot);
+        printf("%d %d\n", sw->ID, gate_control_list[next_time_slot]);
+        if(packet->packet_size < (int)std::round((double)slot_duration * us * link_speed) - time_slot[next_time_slot]) { // If only reserve one time-slot
+            time_slot[next_time_slot] += packet->packet_size;
+            continue;
+        }
+
+        int slot_need = (int)ceil((packet->packet_size - (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) / std::round((double)slot_duration * us * link_speed));
+        slot_need = slot_need < 0? 1 : slot_need+1;
+
+        for(int k = 0; k < slot_need; k++) {
+            gate_control_list[next_time_slot + k] = queue_table[packet->flow_id];
+            if(k != slot_need - 1) {
+                time_slot[next_time_slot + k] = (int)std::round((double)slot_duration * us * link_speed);
+            }
+            else {
+                if(time_slot.find(next_time_slot + k) == time_slot.end())
+                    time_slot[next_time_slot + k] = 0;
+                time_slot[next_time_slot + k] += (packet->packet_size - (int)std::round((double)slot_duration * us * link_speed) * slot_need + time_slot[next_time_slot]);
+            }
+        }
     }
 
     Packet *new_packet = new Packet(packet);
@@ -177,4 +245,45 @@ void SWPort::acceptTimeSlot(Packet *packet) {
     new_packet->flow_id = packet->flow_id;
     new_packet->start_transmission_time = packet->start_transmission_time;
     reserved_table[packet->flow_id] = new_packet;
+}
+
+int SWPort::findAcceptQueueID(Packet *packet, int offset) {
+    bool *queue_occupy_table = new bool[scheduled_queue.size()];
+    std::fill(queue_occupy_table, queue_occupy_table + scheduled_queue.size(), false);
+
+    int slots_per_period = packet->period / slot_duration;
+    for(int j = 0; j < cycle / slots_per_period; j++) { // How many cycle need to check
+        int start_time_slot = j * slots_per_period + (offset + (int)floor((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
+        bool old_queue_check = true;
+        for(int i = offset - 1; i >= 0; i--) {
+            int next_time_slot = j * slots_per_period + (i + (int)floor((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
+            if(gate_control_list[start_time_slot] != -1) { // Use common queue with the same gate time
+                if(gate_control_list[next_time_slot] != gate_control_list[start_time_slot])
+                    old_queue_check = false;
+                if(!old_queue_check)
+                    if(gate_control_list[next_time_slot] != -1)
+                        queue_occupy_table[gate_control_list[next_time_slot]] = true;
+            }
+            else {
+                if(gate_control_list[next_time_slot] != -1)
+                    queue_occupy_table[gate_control_list[next_time_slot]] = true;
+            }
+        }
+    }
+
+    int queue_id = -1;
+    for(size_t i = 0; i < scheduled_queue.size(); i++) {
+        if(queue_occupy_table[i] == false) {
+            queue_id = i;
+            break;
+        }
+    }
+    if(queue_id == -1) {
+        queue_id = scheduled_queue.size();
+        std::priority_queue<Packet*, std::vector<Packet*>, TRComparison> new_queue;
+        scheduled_queue.push_back(new_queue);
+    }
+
+    delete queue_occupy_table;
+    return queue_id;
 }

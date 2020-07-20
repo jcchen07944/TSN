@@ -44,9 +44,9 @@ int main() {
     utility.broadcastEndDevice(sw, ed);
 
 
-    int TSN_FLOW_COUNT = 12;
+    int TSN_FLOW_COUNT = 2;
     int AVB_FLOW_COUNT = 0;
-    int BE_FLOW_COUNT = 6;
+    int BE_FLOW_COUNT = 9;
     std::vector<Flow*> TSN;
     std::vector<Flow*> AVB;
     std::vector<Flow*> BE;
@@ -63,52 +63,66 @@ int main() {
     utility.setupBE(BE[3], 1500, 0, 2); // 120Mbps
     utility.setupBE(BE[4], 1500, 5, 2); // 120Mbps
     utility.setupBE(BE[5], 1500, 1, 2); // 120Mbps
-    //utility.setupBE(BE[6], 1500, 0, 1); // 120Mbps
+    utility.setupBE(BE[6], 1500, 5, 2); // 120Mbps
+    utility.setupBE(BE[7], 1500, 0, 2); // 120Mbps
+    utility.setupBE(BE[8], 1500, 1, 2); // 120Mbps
 
     //utility.setupAVB(AVB[0], 'A', 400, 0, 1, 0); // 2.56%
     //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0); // 5.12%
 
-    utility.setupTSN(TSN[0], 450, 400, 6, 2, 0); // 0.64%
+    utility.setupTSN(TSN[0], 450, 1500, 6, 2, 0); // 0.71%
     utility.reserveTSN(TSN[0], sw, ed);
 
-    utility.setupTSN(TSN[1], 300, 700, 6, 2, 0); // 1.12%
+    utility.setupTSN(TSN[1], 300, 200, 6, 2, 10); // 1.87%
     utility.reserveTSN(TSN[1], sw, ed);
-
-    utility.setupTSN(TSN[2], 150, 750, 6, 2, 0); // 4.8%
+/*
+    utility.setupTSN(TSN[2], 150, 750, 6, 2, 15); // 4%
     utility.reserveTSN(TSN[2], sw, ed);
 
-    utility.setupTSN(TSN[3], 300, 350, 6, 2, 25); // 1.12%
+    utility.setupTSN(TSN[3], 300, 350, 6, 2, 15); // 0.93%
     utility.reserveTSN(TSN[3], sw, ed);
 
-    utility.setupTSN(TSN[4], 150, 200, 6, 2, 0); // 1.28%
+    utility.setupTSN(TSN[4], 150, 64, 6, 2, 0); // 0.34%
     utility.reserveTSN(TSN[4], sw, ed);
 
-    utility.setupTSN(TSN[5], 450, 726, 6, 2, 0); // 1.1616%
+    utility.setupTSN(TSN[5], 450, 725, 6, 2, 30); // 1.29%
     utility.reserveTSN(TSN[5], sw, ed);
 
-    utility.setupTSN(TSN[6], 450, 400, 6, 1, 0); // 0.64%
+    utility.setupTSN(TSN[6], 150, 200, 6, 2, 0); // 1.07%
     utility.reserveTSN(TSN[6], sw, ed);
 
-    utility.setupTSN(TSN[7], 450, 700, 4, 2, 0); // 1.12%
+    utility.setupTSN(TSN[7], 300, 350, 6, 2, 15); // 0.93%
     utility.reserveTSN(TSN[7], sw, ed);
 
-    utility.setupTSN(TSN[8], 150, 750, 4, 2, 0); // 4.8%
+    utility.setupTSN(TSN[8], 450, 400, 4, 2, 0); // 0.71%
     utility.reserveTSN(TSN[8], sw, ed);
 
-    utility.setupTSN(TSN[9], 300, 350, 4, 2, 25); // 1.12%
+    utility.setupTSN(TSN[9], 300, 700, 4, 2, 0); // 1.87%
     utility.reserveTSN(TSN[9], sw, ed);
 
-    utility.setupTSN(TSN[10], 150, 200, 4, 2, 0); // 1.28%
+    utility.setupTSN(TSN[10], 150, 750, 4, 2, 15); // 4%
     utility.reserveTSN(TSN[10], sw, ed);
 
-    utility.setupTSN(TSN[11], 450, 726, 4, 2, 0); // 1.1616%
+    utility.setupTSN(TSN[11], 300, 350, 4, 2, 15); // 0.93%
     utility.reserveTSN(TSN[11], sw, ed);
 
+    utility.setupTSN(TSN[12], 150, 64, 4, 2, 0); // 0.34%
+    utility.reserveTSN(TSN[12], sw, ed);
+
+    utility.setupTSN(TSN[13], 450, 725, 4, 2, 30); // 1.29%
+    utility.reserveTSN(TSN[13], sw, ed);
+
+    utility.setupTSN(TSN[14], 150, 200, 4, 2, 0); // 1.07%
+    utility.reserveTSN(TSN[14], sw, ed);
+
+    utility.setupTSN(TSN[15], 300, 350, 4, 2, 15); // 0.93%
+    utility.reserveTSN(TSN[15], sw, ed);
+*/
     srand(time(NULL));
 
+    utility.resetNetworkTime(sw, ed);
     long long time = 0;
-
-    while(time < 1000000) { // 1 second
+    while(time < 10000) { // 1 second
         for(int i = 0; i < TSN_FLOW_COUNT; i++)
             TSN[i]->run(ed[TSN[i]->source], TSN_FLOW);
         for(int i = 0; i < AVB_FLOW_COUNT; i++)
@@ -124,6 +138,6 @@ int main() {
         time++;
     }
 
-    printf("%.4f %.4f\n", ed[2]->max_latency, ed[2]->acc_latency/ed[2]->flow_cnt);
+    printf("Maximum delay: %.4f, Average delay: %.4f\n", ed[2]->max_latency, ed[2]->acc_latency/ed[2]->flow_cnt);
     return 0;
 }

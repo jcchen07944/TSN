@@ -29,7 +29,7 @@ EDPort* EndDevice::newPort() {
 }
 
 void EndDevice::sendPacket(Packet* packet) {
-    printf("%lld\n", _time);
+    //printf("Flow %d, %lld\n", packet->p_flow_id, _time);
     packet->send_time = _time;
     port->buffer.push(packet);
 }

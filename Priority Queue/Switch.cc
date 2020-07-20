@@ -59,13 +59,13 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             }
             delete packet;
         }
-        else if(port[routing_table[packet->destination]]->offset_table.find(packet->p_flow_id) == port[routing_table[packet->destination]]->offset_table.end()){
+        else if(port[routing_table[packet->destination]]->offset_table.find(packet->p_flow_id) == port[routing_table[packet->destination]]->offset_table.end()) {
             port[routing_table[packet->destination]]->be_queue.push(packet);
         }
         else {
-            //printf("Switch %d\n", ID);
-            int slot_num = port[routing_table[packet->destination]]->offset_table[packet->p_flow_id] + port[routing_table[packet->destination]]->current_slot + 1;
-            port[routing_table[packet->destination]]->offset_slot[slot_num % port[routing_table[packet->destination]]->offset_slot.size()].push(packet);
+            //printf("Switch %d, Flow %d, %lld\n", ID, packet->p_flow_id, _time);
+            int queue_num = port[routing_table[packet->destination]]->queue_table[packet->flow_id];
+            port[routing_table[packet->destination]]->scheduled_queue[queue_num].push(packet);
         }
     }
     else if(!priority_queue_enable) {
