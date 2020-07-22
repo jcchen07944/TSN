@@ -40,7 +40,7 @@ void EndDevice::receivePacket(Packet* packet) {
     }
     else if(RESERVATION_MODE == TIME_RESERVATION) {
         if(packet->reservation_state == TALKER_ATTRIBUTE) {
-            double delay = (packet->acc_slot_count + 1) * slot_duration;
+            double delay = (packet->acc_slot_count + 1) * slot_duration + (int)floor((double)packet->packet_size / rate / us);
             Packet *new_packet = new Packet(packet);
             new_packet->source = packet->destination;
             new_packet->destination = packet->source;
