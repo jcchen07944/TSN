@@ -63,9 +63,9 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             port[routing_table[packet->destination]]->be_queue.push(packet);
         }
         else {
-            //printf("Switch %d, Flow %d, %lld\n", ID, packet->p_flow_id, _time);
+            printf("Switch %d, Flow %d, %lld\n", ID, packet->p_flow_id, _time);
             int queue_num = port[routing_table[packet->destination]]->queue_table[packet->flow_id];
-            port[routing_table[packet->destination]]->scheduled_queue[queue_num].push(packet);
+            port[routing_table[packet->destination]]->scheduled_buffer[queue_num] = packet;
         }
     }
     else if(!priority_queue_enable) {
