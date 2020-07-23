@@ -53,7 +53,7 @@ public:
     std::map<int, int> offset_table; // <flow_id, offset>
     std::map<int, int> time_slot; // <reserved_slot_number, packet_size(bit)>
     std::map<int, Packet*> reserved_table; // <flow_id, flow_info>
-    std::map<int, int> queue_table; // <flow_id, queue_id>
+    std::map<int, int> buffer_table; // <flow_id, buffer_id>
     std::vector<std::vector<bool> > gate_control_list; // For each scheduled_buffer => <gate_control>
     std::vector<Packet*> scheduled_buffer;
     double last_transmission_time;

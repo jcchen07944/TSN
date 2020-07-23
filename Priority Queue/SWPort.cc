@@ -190,7 +190,6 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
             slot_need = slot_need < 0? 1 : slot_need + 1;
             //printf("%d %d\n", sw->ID, slot_need);
             offset_table[packet->flow_id] = i;
-            queue_table[packet->flow_id] = findAcceptQueueID(packet, i);
             last_transmission_time = packet->start_transmission_time;
 
             /**********BUG*********/
@@ -224,8 +223,8 @@ void SWPort::acceptTimeSlot(Packet *packet) {
     packet->start_transmission_time = last_transmission_time;
     //printf("%d %.4f\n", sw->ID, packet->start_transmission_time);
 
-    queue_table[packet->flow_id] = findAcceptQueueID(packet, offset_table[packet->flow_id]);
-    printf("%d %d\n", sw->ID, queue_table[packet->flow_id]);
+    buffer_table[packet->flow_id] = findAcceptQueueID(packet, offset_table[packet->flow_id]);
+    printf("%d %d\n", sw->ID, buffer_table[packet->flow_id]);
 
     int slots_per_period = packet->period / slot_duration; // Now assume that slots per period are int
     for(int i = 0; i < cycle / slots_per_period; i++) { // How many time-slot need to check
@@ -237,7 +236,7 @@ void SWPort::acceptTimeSlot(Packet *packet) {
         slot_need = slot_need < 0? 1 : slot_need+1;
 
         for(int k = slot_need - 1; k >= 0; k--) {
-            gate_control_list[queue_table[packet->flow_id]][next_time_slot + k] = true;
+            gate_control_list[buffer_table[packet->flow_id]][next_time_slot + k] = true;
             if(k != slot_need - 1) {
                 time_slot[next_time_slot + k] = (int)std::round((double)slot_duration * us * link_speed);
             }
