@@ -46,7 +46,7 @@ int main() {
 
     int TSN_FLOW_COUNT = 2;
     int AVB_FLOW_COUNT = 0;
-    int BE_FLOW_COUNT = 0;
+    int BE_FLOW_COUNT = 9;
     std::vector<Flow*> TSN;
     std::vector<Flow*> AVB;
     std::vector<Flow*> BE;
@@ -57,7 +57,7 @@ int main() {
     for(int i = 0; i < BE_FLOW_COUNT; i++)
         BE.push_back(new Flow(i + TSN_FLOW_COUNT + AVB_FLOW_COUNT));
 
-/*    utility.setupBE(BE[0], 1500, 0, 2); // 120Mbps
+    utility.setupBE(BE[0], 1500, 0, 2); // 120Mbps
     utility.setupBE(BE[1], 1500, 5, 2); // 120Mbps
     utility.setupBE(BE[2], 1500, 1, 2); // 120Mbps
     utility.setupBE(BE[3], 1500, 0, 2); // 120Mbps
@@ -66,7 +66,7 @@ int main() {
     utility.setupBE(BE[6], 1500, 5, 2); // 120Mbps
     utility.setupBE(BE[7], 1500, 0, 2); // 120Mbps
     utility.setupBE(BE[8], 1500, 1, 2); // 120Mbps
-*/
+
     //utility.setupAVB(AVB[0], 'A', 400, 0, 1, 0); // 2.56%
     //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0); // 5.12%
 
