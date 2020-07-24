@@ -93,8 +93,11 @@ public:
 
     void run(long long time);
 private:
-    Packet *_pforward; // Packet forwarding
-    long long _tforward; // Forwarding time
+    //Packet *_pforward; // Packet forwarding
+    //long long _tforward; // Forwarding time
+
+    std::vector<Packet*> _pforward;
+    std::vector<long long> _tforward;
 };
 
 #endif
