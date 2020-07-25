@@ -91,7 +91,7 @@ void SWPort::run(long long time) {
             else if(be_queue.size() > 0) {
                 //printf("%f %f\n", ((double)be_queue.front()->p_size / rate / us * 100.0d + time) / (slot_duration*100), time / (slot_duration*100));
                 int idle_size = 0; // bit
-                idle_size += (int)floor((ceil(time / (slot_duration*100)) - time / (slot_duration*100)) * slot_duration * us * link_speed);
+                idle_size += (int)floor((floor(time / (slot_duration*100) + 1) - time / (slot_duration*100)) * slot_duration * us * link_speed);
                 for(int i = 1; i < cycle; i++) {
                     if(time_slot.find((current_slot + i) % cycle) == time_slot.end())
                         idle_size += slot_duration * us * link_speed;
