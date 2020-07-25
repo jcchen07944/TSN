@@ -20,10 +20,6 @@ SWPort::SWPort(int port_num, Switch *sw, double rate) {
     _tforward = 0;
 
     cycle = 3;
-    //std::vector<bool> gate_control;
-    //gate_control.push_back(false);
-    //gate_control_list.push_back(gate_control);
-    //scheduled_buffer.push_back(nullptr);
     current_slot = 0;
 }
 
@@ -44,7 +40,6 @@ void SWPort::receivePacket(Packet* packet) {
 void SWPort::sendPacket(Packet* packet) {
     if(time_reservation_enable) {
         if(offset_table.find(packet->p_flow_id) != offset_table.end()) {
-            //int queue_id = buffer_table[packet->p_flow_id];
             std::pair<Packet*, int> scheduled_packet;
             scheduled_packet.first = packet;
             scheduled_packet.second = getEligibleSlot(packet);
@@ -63,7 +58,6 @@ int SWPort::getEligibleSlot(Packet* packet) {
 
 void SWPort::run(long long time) {
     current_slot = (int)floor(time / (slot_duration*100)) % cycle;
-    //current_slot = floor((time / (slot_duration*100) + cycle - 1)) % cycle;
     if(_pforward != nullptr) {
         if(time >= _tforward) {
             // Forwarding finish
@@ -90,7 +84,7 @@ void SWPort::run(long long time) {
                 }
             }
             if(selected_index != -1) {
-                printf("Switch %d, Flow %d, Time %.4f, Slot %d\n", sw->ID, _pforward->p_flow_id, time/100.0, current_slot);
+                //printf("Switch %d, Flow %d, Time %.4f, Slot %d\n", sw->ID, _pforward->p_flow_id, time/100.0, current_slot);
                 _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                 scheduled_buffer.erase(scheduled_buffer.begin() + selected_index);
             }
@@ -106,7 +100,6 @@ void SWPort::run(long long time) {
                     else
                         break;
                 }
-                //printf("%d\n", idle_size);
                 if(be_queue.front()->p_size > idle_size)
                     return;
                 _pforward = be_queue.front();
@@ -157,9 +150,6 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
         for(int i = cycle; i < new_cycle; i++) {
             if(time_slot.find(i - cycle) != time_slot.end())
                 time_slot[new_cycle] = time_slot[i - cycle];
-            //for(size_t j = 0; j < gate_control_list.size(); j++) {
-            //    gate_control_list[j].push_back(gate_control_list[j][i - cycle]);
-            //}
         }
         cycle = new_cycle;
     }
@@ -173,7 +163,7 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
         for(int j = 0; j < cycle / slots_per_period; j++) { // How many cycle need to check
 
             int next_time_slot = j * slots_per_period + (i + (int)ceil((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
-            printf("%d %d %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
+            //printf("%d %d %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
             if(time_slot[next_time_slot] == (int)std::round((double)slot_duration * us * link_speed)) { // Reserve first time-slot
                 can_reserve = false;
                 break;
@@ -249,10 +239,7 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
 
 void SWPort::acceptTimeSlot(Packet *packet) {
     packet->start_transmission_time = last_transmission_time;
-    printf("%d %.4f\n", sw->ID, packet->start_transmission_time);
-
-    //buffer_table[packet->flow_id] = findAcceptQueueID(packet, offset_table[packet->flow_id]);
-    //printf("%d %d\n", sw->ID, buffer_table[packet->flow_id]);
+    //printf("%d %.4f\n", sw->ID, packet->start_transmission_time);
 
     int slots_per_period = packet->period / slot_duration; // Now assume that slots per period are int
     for(int i = 0; i < cycle / slots_per_period; i++) { // How many time-slot need to check
@@ -264,7 +251,6 @@ void SWPort::acceptTimeSlot(Packet *packet) {
         slot_need = slot_need < 0? 1 : slot_need+1;
 
         for(int k = slot_need - 1; k >= 0; k--) {
-            //gate_control_list[buffer_table[packet->flow_id]][next_time_slot + k] = true;
             if(time_slot.find(next_time_slot + k) == time_slot.end())
                 time_slot[next_time_slot + k] = 0;
 
@@ -280,14 +266,6 @@ void SWPort::acceptTimeSlot(Packet *packet) {
         }
     }
 
-/*
-    for(int i = 0; i < scheduled_buffer.size(); i++) {
-        printf("%d: ", sw->ID);
-        for(int j = 0; j < cycle; j++)
-            printf("%s ", gate_control_list[i][j]? "T" : "F");
-        printf("\n");
-    }*/
-
     Packet *new_packet = new Packet(packet);
     new_packet->period = packet->period;
     new_packet->packet_size = packet->packet_size;
@@ -295,39 +273,3 @@ void SWPort::acceptTimeSlot(Packet *packet) {
     new_packet->start_transmission_time = packet->start_transmission_time;
     reserved_table[packet->flow_id] = new_packet;
 }
-/*
-int SWPort::findAcceptQueueID(Packet *packet, int offset) {
-    bool *queue_occupy_table = new bool[scheduled_buffer.size()];
-    std::fill(queue_occupy_table, queue_occupy_table + scheduled_buffer.size(), false);
-
-    int slots_per_period = packet->period / slot_duration;
-    for(int j = 0; j < cycle / slots_per_period; j++) { // How many cycle need to check
-        for(int i = offset - 1; i >= 0; i--) {
-            int next_time_slot = j * slots_per_period + (i + (int)floor((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
-            for(size_t k = 0; k < scheduled_buffer.size(); k++) {
-                if(gate_control_list[k][next_time_slot])
-                    queue_occupy_table[k] = true;
-            }
-        }
-    }
-
-    int queue_id = -1;
-    for(size_t i = 0; i < scheduled_buffer.size(); i++) {
-        if(queue_occupy_table[i] == false) {
-            queue_id = i;
-            break;
-        }
-    }
-    if(queue_id == -1) {
-        queue_id = scheduled_buffer.size();
-        std::vector<bool> gate_control;
-        for(int i = 0; i < cycle; i++)
-            gate_control.push_back(false);
-        gate_control_list.push_back(gate_control);
-        scheduled_buffer.push_back(nullptr);
-    }
-
-    delete queue_occupy_table;
-    return queue_id;
-}
-*/

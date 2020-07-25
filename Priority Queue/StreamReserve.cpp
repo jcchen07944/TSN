@@ -122,7 +122,7 @@ int main() {
 
     utility.resetNetworkTime(sw, ed);
     long long time = 0;
-    while(time < 10000) { // 1 second
+    while(time < 1000000) { // 1 second
         for(int i = 0; i < TSN_FLOW_COUNT; i++)
             TSN[i]->run(ed[TSN[i]->source], TSN_FLOW);
         for(int i = 0; i < AVB_FLOW_COUNT; i++)
