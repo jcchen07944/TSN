@@ -90,7 +90,7 @@ void SWPort::run(long long time) {
                 }
             }
             if(selected_index != -1) {
-                //printf("Switch %d, Flow %d, Time %.4f, Slot %d\n", sw->ID, _pforward->p_flow_id, time/100.0, current_slot);
+                printf("Switch %d, Flow %d, Time %.4f, Slot %d\n", sw->ID, _pforward->p_flow_id, time/100.0, current_slot);
                 _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                 scheduled_buffer.erase(scheduled_buffer.begin() + selected_index);
             }
@@ -181,6 +181,7 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
 
             int slot_need = (int)ceil((packet->packet_size - (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) / std::round((double)slot_duration * us * link_speed));
             slot_need = slot_need < 0? 1 : slot_need+1;
+
             //printf("%d\n", slot_need);
             if(old_slot_need != -1 && old_slot_need != slot_need) { // Make sure the delay in every cycle are same.
                 can_reserve = false;
@@ -203,7 +204,7 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
                 }
                 else {
                     if(time_slot.find(next_time_slot + k) != time_slot.end()) {
-                        if(time_slot[next_time_slot + k] > packet->packet_size - k * (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) {
+                        if((int)std::round((double)slot_duration * us * link_speed) - time_slot[next_time_slot + k] < packet->packet_size - k * (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) {
                             can_reserve = false;
                             break;
                         }
@@ -264,12 +265,16 @@ void SWPort::acceptTimeSlot(Packet *packet) {
 
         for(int k = slot_need - 1; k >= 0; k--) {
             //gate_control_list[buffer_table[packet->flow_id]][next_time_slot + k] = true;
-            if(k != slot_need - 1) {
+            if(time_slot.find(next_time_slot + k) == time_slot.end())
+                time_slot[next_time_slot + k] = 0;
+
+            if(k == 0 && slot_need == 1) { // Only need one time-slot
+                time_slot[next_time_slot] += packet->packet_size;
+            }
+            else if(k != slot_need - 1) {
                 time_slot[next_time_slot + k] = (int)std::round((double)slot_duration * us * link_speed);
             }
             else {
-                if(time_slot.find(next_time_slot + k) == time_slot.end())
-                    time_slot[next_time_slot + k] = 0;
                 time_slot[next_time_slot + k] += (packet->packet_size - (int)std::round((double)slot_duration * us * link_speed) * (slot_need-1) + time_slot[next_time_slot]);
             }
         }
