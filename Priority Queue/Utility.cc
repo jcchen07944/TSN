@@ -69,7 +69,7 @@ void Utility::setupTSN(Flow *TSN, double period, double deadline, int packet_siz
 }
 
 void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevice*> ed) {
-    if(!time_reservation_enable)
+    if(!time_reservation_enable && !ats_enable)
         return;
     Packet *talker_attribute = new Packet();
     talker_attribute->reservation_state = TALKER_ATTRIBUTE;

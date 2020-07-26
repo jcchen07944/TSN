@@ -7,6 +7,7 @@
 #include "Switch.h"
 #include "EndDevice.h"
 #include "Packet.h"
+#include "ATSScheduler.h"
 
 class SWPort;
 class EDPort;
@@ -46,15 +47,21 @@ public:
     std::vector<std::queue<Packet*>*> t_queue;
     std::vector<std::priority_queue<Packet*, std::vector<Packet*>, Comparison>*> t_priority_queue;
 
+    std::queue<Packet*> be_queue;
+    std::vector<std::pair<Packet*, long long> > scheduled_buffer; // <packet, scheduled_slot> or <packet, scheduled_time>
+
     /* For Time-reservation */
     int current_slot;
-    std::queue<Packet*> be_queue;
     int cycle; // time slot number in a cycle
     std::map<int, int> offset_table; // <flow_id, offset>
     std::map<int, int> time_slot; // <reserved_slot_number, packet_size(bit)>
     std::map<int, Packet*> reserved_table; // <flow_id, flow_info>
     double last_transmission_time;
-    std::vector<std::pair<Packet*, int> > scheduled_buffer; // <packet, scheduled_slot>
+
+    /* For ATS */
+    std::map<int, int> ats_scheduler_table; // <flow_id, scheduler_id>
+    std::vector<ATSScheduler*> ats_scheduler_list;
+    std::vector<long long> group_eligibility_time;
 
     int port_num;
     Switch *sw;
@@ -76,7 +83,11 @@ private:
 
     void acceptTimeSlot(Packet *packet);
 
-    int getEligibleSlot(Packet* packet);
+    bool reserveBandwidth(Packet *packet);
+
+    void acceptBandwidth(Packet *packet);
+
+    int getEligibilitySlot(Packet* packet);
 };
 
 class EDPort : public Port {

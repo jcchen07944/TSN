@@ -9,6 +9,8 @@ public:
     int source; // Mac Address
     int destination; // Mac Address
 
+    long long arrival_time;
+
     /* For statistic */
     int packet_id;
     long long send_time; // microsecond

@@ -29,10 +29,16 @@ SWPort::~SWPort() {
 
 void SWPort::receivePacket(Packet* packet) {
     if(packet->reservation_state == LISTENER_ACCEPT) {
-        acceptTimeSlot(packet);
+        if(time_reservation_enable)
+            acceptTimeSlot(packet);
+        else if(ats_enable)
+            acceptBandwidth(packet);
     }
     else if(packet->reservation_state == LISTENER_REJECT) {
-        offset_table.erase(_pforward->flow_id);
+        if(time_reservation_enable)
+            offset_table.erase(_pforward->flow_id);
+        else if(ats_enable)
+            ats_scheduler_table.erase(_pforward->flow_id);
     }
     sw->receivePacket(port_num, packet);
 }
@@ -40,19 +46,31 @@ void SWPort::receivePacket(Packet* packet) {
 void SWPort::sendPacket(Packet* packet) {
     if(time_reservation_enable) {
         if(offset_table.find(packet->p_flow_id) != offset_table.end()) {
-            std::pair<Packet*, int> scheduled_packet;
+            std::pair<Packet*, long long> scheduled_packet;
             scheduled_packet.first = packet;
-            scheduled_packet.second = getEligibleSlot(packet);
+            scheduled_packet.second = (long long)getEligibilitySlot(packet);
             scheduled_buffer.push_back(scheduled_packet);
-            //printf("Switch %d, Flow %d, %d\n", sw->ID, packet->p_flow_id, getEligibleSlot(packet));
+            printf("Switch %d, Flow %d, %d\n", sw->ID, packet->p_flow_id, getEligibilitySlot(packet));
         }
         else {
             be_queue.push(packet);
         }
     }
+    else if(ats_enable) {
+        if(packet->p_priority == 0) {
+            be_queue.push(packet);
+        }
+        else {
+            std::pair<Packet*, long long> scheduled_packet;
+            scheduled_packet.first = packet;
+            scheduled_packet.second = ats_scheduler_list[ats_scheduler_table[packet->p_flow_id]]->getEligibilityTime(packet, group_eligibility_time);
+            //printf("Switch %d, Flow %d, %lld\n", sw->ID, packet->p_flow_id, scheduled_packet.second);
+            scheduled_buffer.push_back(scheduled_packet);
+        }
+    }
 }
 
-int SWPort::getEligibleSlot(Packet* packet) {
+int SWPort::getEligibilitySlot(Packet* packet) {
     return (current_slot + offset_table[packet->p_flow_id] + 1) % cycle;
 }
 
@@ -72,7 +90,7 @@ void SWPort::run(long long time) {
         if(time_reservation_enable) {
             int selected_index = -1;
             for(size_t i = 0; i < scheduled_buffer.size(); i++) {
-                if(scheduled_buffer[i].second == current_slot) {
+                if((int)scheduled_buffer[i].second == current_slot) {
                     if(_pforward == nullptr) {
                         _pforward = scheduled_buffer[i].first;
                         selected_index = i;
@@ -111,7 +129,32 @@ void SWPort::run(long long time) {
             }
         }
         else if(ats_enable) {
-
+            int selected_index = -1;
+            for(size_t i = 0; i < scheduled_buffer.size(); i++) {
+                if(scheduled_buffer[i].second <= time) {
+                    if(_pforward == nullptr) {
+                        _pforward = scheduled_buffer[i].first;
+                        selected_index = i;
+                    }
+                    if(scheduled_buffer[selected_index].second > scheduled_buffer[i].second) {
+                        _pforward = scheduled_buffer[i].first;
+                        selected_index = i;
+                    }
+                }
+            }
+            if(selected_index != -1) {
+                //printf("Switch %d, Flow %d, Time %.4f, Slot %d\n", sw->ID, _pforward->p_flow_id, time/100.0, current_slot);
+                _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
+                scheduled_buffer.erase(scheduled_buffer.begin() + selected_index);
+            }
+            else if(be_queue.size() > 0) {
+                _pforward = be_queue.front();
+                if(_pforward->reservation_state == TALKER_ATTRIBUTE)
+                    if(!reserveBandwidth(_pforward))
+                        _pforward = nullptr;
+                _tforward = time + (double)be_queue.front()->p_size / rate / us * 100.0d;
+                be_queue.pop();
+            }
         }
         // Strict Priority
         // FIFO
@@ -272,4 +315,20 @@ void SWPort::acceptTimeSlot(Packet *packet) {
     new_packet->flow_id = packet->flow_id;
     new_packet->start_transmission_time = packet->start_transmission_time;
     reserved_table[packet->flow_id] = new_packet;
+}
+
+bool SWPort::reserveBandwidth(Packet *packet) {
+    if(group_eligibility_time.size() == 0)
+        group_eligibility_time.push_back(0);
+    ATSScheduler *ats_scheduler = new ATSScheduler(ats_scheduler_list.size(), 0);
+    ats_scheduler->committed_burst_size = packet->packet_size;
+    ats_scheduler->committed_information_rate = packet->packet_size / (packet->period * us);
+    ats_scheduler_table[packet->flow_id] = ats_scheduler_list.size();
+    ats_scheduler_list.push_back(ats_scheduler);
+    return true;
+}
+
+void SWPort::acceptBandwidth(Packet *packet) {
+    ats_scheduler_list[ats_scheduler_table[packet->flow_id]]->bucket_empty_time = 0;
+    return;
 }

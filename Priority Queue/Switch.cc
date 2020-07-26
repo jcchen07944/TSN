@@ -63,6 +63,21 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             port[routing_table[packet->destination]]->sendPacket(packet);
         }
     }
+    else if(ats_enable) {
+        if(packet->broadcast) {
+            for(size_t i = 0; i < port.size(); i++) {
+                if((int)i != routing_table[packet->source]) {
+                    Packet *newPacket = new Packet(packet);
+                    port[i]->sendPacket(newPacket);
+                }
+            }
+            delete packet;
+        }
+        else {
+            packet->arrival_time = _time;
+            port[routing_table[packet->destination]]->sendPacket(packet);
+        }
+    }
     else if(!priority_queue_enable) {
         if(packet->broadcast) {
             for(size_t i = 0; i < port.size(); i++) {
