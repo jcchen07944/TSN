@@ -106,7 +106,7 @@ void EndDevice::receivePacket(Packet* packet) {
     }
     // Statistic
     double latency = (double)(_time - packet->send_time) / 100.0d;
-    printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, _time / 100.0d, latency);
+    //printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, _time / 100.0d, latency);
     if(packet->p_flow_id != -1) {
         max_latency = std::max(max_latency, latency);
         acc_latency += latency;
@@ -117,9 +117,9 @@ void EndDevice::receivePacket(Packet* packet) {
             output_file << latency << std::endl;
             output_file.close();
         }
-        if(packet->deadline < latency) {
-            printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, (_time / 100.0d), latency);
-        }
+        //if(packet->deadline < latency) {
+        printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, _time / 100.0d, latency);
+        //}
     }
 
     delete packet;

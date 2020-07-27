@@ -15,6 +15,8 @@ Packet::Packet(Packet *packet) {
     p_priority = packet->p_priority;
     p_flow_id = packet->p_flow_id;
     deadline = packet->deadline;
+    per_hop_deadline = packet->per_hop_deadline;
+    priority = packet->priority;
     source = packet->source;
     destination = packet->destination;
     broadcast = packet->broadcast;

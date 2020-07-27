@@ -49,13 +49,13 @@ public:
 
     std::queue<Packet*> be_queue;
     std::vector<std::pair<Packet*, long long> > scheduled_buffer; // <packet, scheduled_slot> or <packet, scheduled_time>
+    std::map<int, Packet*> reserved_table; // <flow_id, flow_info>
 
     /* For Time-reservation */
     int current_slot;
     int cycle; // time slot number in a cycle
     std::map<int, int> offset_table; // <flow_id, offset>
     std::map<int, int> time_slot; // <reserved_slot_number, packet_size(bit)>
-    std::map<int, Packet*> reserved_table; // <flow_id, flow_info>
     double last_transmission_time;
 
     /* For ATS */

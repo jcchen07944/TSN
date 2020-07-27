@@ -321,6 +321,43 @@ bool SWPort::reserveBandwidth(Packet *packet) {
     ats_scheduler->committed_information_rate = packet->packet_size / (packet->period * us);
     ats_scheduler_table[packet->flow_id] = ats_scheduler_list.size();
     ats_scheduler_list.push_back(ats_scheduler);
+
+    Packet *new_packet = new Packet(packet);
+    new_packet->period = packet->period;
+    new_packet->packet_size = packet->packet_size;
+    new_packet->flow_id = packet->flow_id;
+    reserved_table[packet->flow_id] = new_packet;
+
+    double max_delay = 0.0f;
+    for(auto iter = reserved_table.begin(); iter != reserved_table.end(); iter++) {
+        Packet *h = iter->second;
+        int burst_size = 0;
+        double higher_rate = 0.0f;
+        for(auto jter = reserved_table.begin(); jter != reserved_table.end(); jter++) {
+            Packet *g = jter->second;
+            if(g->priority > h->priority) {
+                burst_size += g->packet_size;
+                higher_rate += g->packet_size / (g->period * us);
+            }
+            if(g->priority == h->priority && g->flow_id != h->flow_id) {
+                burst_size += g->packet_size;
+            }
+        }
+        double tmp = (burst_size - h->packet_size + 12000) / (link_speed - higher_rate) + h->packet_size / link_speed;
+        max_delay = std::max(tmp, max_delay);
+    }
+
+    printf("%d %.4f\n", sw->ID, max_delay);
+    if(max_delay > packet->per_hop_deadline) {
+        Packet *new_packet = new Packet(packet);
+        new_packet->source = packet->destination;
+        new_packet->destination = packet->source;
+        new_packet->reservation_state = LISTENER_REJECT;
+        new_packet->flow_id = packet->flow_id;
+        sw->receivePacket(port_num, new_packet);
+        delete packet;
+        return false;
+    }
     return true;
 }
 

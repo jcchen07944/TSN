@@ -28,6 +28,8 @@ public:
     int packet_size; // Value for talker attribute, not for transmission. (bits)
     double period; // microsecond
     double deadline; // microsecond
+    double per_hop_deadline; // microsecond
+    int priority;
     /* For Time Reservation */
     double start_transmission_time; // microsecond
     int acc_slot_count;

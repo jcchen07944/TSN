@@ -71,58 +71,74 @@ int main() {
     //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0); // 5.12%
 
     utility.setupTSN(TSN[0], 450, 150, 6, 2, 0); // 0.71%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[0], sw, ed);
 
     utility.setupTSN(TSN[1], 300, 200, 6, 2, 10); // 1.87%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[1], sw, ed);
 
     utility.setupTSN(TSN[2], 150, 750, 6, 2, 15); // 4%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[2], sw, ed);
 
     utility.setupTSN(TSN[3], 300, 350, 6, 2, 15); // 0.93%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[3], sw, ed);
 
     utility.setupTSN(TSN[4], 150, 64, 6, 2, 0); // 0.34%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[4], sw, ed);
 
     utility.setupTSN(TSN[5], 450, 725, 6, 2, 30); // 1.29%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[5], sw, ed);
 
     utility.setupTSN(TSN[6], 150, 200, 6, 2, 0); // 1.07%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[6], sw, ed);
 
     utility.setupTSN(TSN[7], 300, 350, 6, 2, 15); // 0.93%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[7], sw, ed);
 
     utility.setupTSN(TSN[8], 450, 400, 4, 2, 0); // 0.71%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[8], sw, ed);
 
     utility.setupTSN(TSN[9], 300, 700, 4, 2, 0); // 1.87%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[9], sw, ed);
 
     utility.setupTSN(TSN[10], 150, 750, 4, 2, 15); // 4%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[10], sw, ed);
 
     utility.setupTSN(TSN[11], 300, 350, 4, 2, 15); // 0.93%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[11], sw, ed);
 
     utility.setupTSN(TSN[12], 150, 64, 4, 2, 0); // 0.34%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[12], sw, ed);
 
     utility.setupTSN(TSN[13], 450, 725, 4, 2, 30); // 1.29%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[13], sw, ed);
 
     utility.setupTSN(TSN[14], 150, 200, 4, 2, 0); // 1.07%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[14], sw, ed);
 /*
     utility.setupTSN(TSN[15], 300, 350, 4, 2, 15); // 0.93%
+    utility.hop_count = 3;
     utility.reserveTSN(TSN[15], sw, ed);
 */
     srand(time(NULL));
 
     utility.resetNetworkTime(sw, ed);
     long long time = 0;
-    while(time < 1000000) { // 1 second
+    while(time < 100000) { // 1 second
         for(int i = 0; i < TSN_FLOW_COUNT; i++)
             TSN[i]->run(ed[TSN[i]->source], TSN_FLOW);
         for(int i = 0; i < AVB_FLOW_COUNT; i++)

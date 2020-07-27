@@ -80,6 +80,9 @@ void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevi
     talker_attribute->packet_size = TSN->packet_size;
     talker_attribute->period = TSN->period;
     talker_attribute->deadline = TSN->deadline;
+    talker_attribute->priority = 7;
+    if(RESERVATION_MODE == ATS)
+        talker_attribute->per_hop_deadline = TSN->deadline / hop_count;
     talker_attribute->start_transmission_time = TSN->start_time;
     talker_attribute->flow_id = TSN->ID;
     talker_attribute->p_priority = 0;
