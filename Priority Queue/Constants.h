@@ -2,8 +2,10 @@
 #define CONSTANTS_H
 
 const bool priority_queue_enable = false;
-const bool time_reservation_enable = true;
-const bool ats_enable = false;
+const bool time_reservation_enable = false;
+const bool ats_enable = true;
+
+const bool write_to_file = true;
 
 const double us = 0.000001;
 const double ms = 0.001;

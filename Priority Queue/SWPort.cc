@@ -50,7 +50,7 @@ void SWPort::sendPacket(Packet* packet) {
             scheduled_packet.first = packet;
             scheduled_packet.second = (long long)getEligibilitySlot(packet);
             scheduled_buffer.push_back(scheduled_packet);
-            printf("Switch %d, Flow %d, %d\n", sw->ID, packet->p_flow_id, getEligibilitySlot(packet));
+            //printf("Switch %d, Flow %d, %d\n", sw->ID, packet->p_flow_id, getEligibilitySlot(packet));
         }
         else {
             be_queue.push(packet);

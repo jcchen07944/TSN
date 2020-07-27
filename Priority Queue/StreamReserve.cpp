@@ -44,7 +44,7 @@ int main() {
     utility.broadcastEndDevice(sw, ed);
 
 
-    int TSN_FLOW_COUNT = 16;
+    int TSN_FLOW_COUNT = 15;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 9;
     std::vector<Flow*> TSN;
@@ -114,10 +114,10 @@ int main() {
 
     utility.setupTSN(TSN[14], 150, 200, 4, 2, 0); // 1.07%
     utility.reserveTSN(TSN[14], sw, ed);
-
+/*
     utility.setupTSN(TSN[15], 300, 350, 4, 2, 15); // 0.93%
     utility.reserveTSN(TSN[15], sw, ed);
-
+*/
     srand(time(NULL));
 
     utility.resetNetworkTime(sw, ed);

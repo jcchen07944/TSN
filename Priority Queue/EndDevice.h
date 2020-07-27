@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <utility>
+#include <fstream>
 
 #include "Port.h"
 #include "Packet.h"
@@ -40,8 +41,9 @@ public:
 private:
     long long _time;
 
-
     std::vector<std::pair<long long, Packet*>*> _pforward; // Packet forwarding
+
+    std::ofstream output_file;
 };
 
 #endif

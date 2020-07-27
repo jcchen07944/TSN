@@ -1,4 +1,5 @@
 #include <math.h>
+#include <string>
 
 #include "EndDevice.h"
 #include "Constants.h"
@@ -110,6 +111,12 @@ void EndDevice::receivePacket(Packet* packet) {
         max_latency = std::max(max_latency, latency);
         acc_latency += latency;
         flow_cnt++;
+        if(write_to_file) {
+            std::string mode = ats_enable ? "ats_" : (time_reservation_enable ? "tr_" : "");
+            output_file.open(mode + std::to_string(packet->p_flow_id) + ".txt", std::ios_base::app);
+            output_file << latency << std::endl;
+            output_file.close();
+        }
         if(packet->deadline < latency) {
             printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, (_time / 100.0d), latency);
         }
