@@ -1,11 +1,12 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-const bool priority_queue_enable = false;
-const bool time_reservation_enable = false;
-const bool ats_enable = true;
+const int NO_RESERVATION = -1;
+const int ATS = 0;
+const int TIME_RESERVATION = 1;
+const int RESERVATION_MODE = TIME_RESERVATION;
 
-const bool write_to_file = true;
+const bool write_to_file = false;
 
 const double us = 0.000001;
 const double ms = 0.001;

@@ -49,7 +49,7 @@ void Switch::receivePacket(int port_num, Packet* packet) {
     /***********************/
     /** Switch Processing **/
     /***********************/
-    if(time_reservation_enable) {
+    if(RESERVATION_MODE == TIME_RESERVATION) {
         if(packet->broadcast) {
             for(size_t i = 0; i < port.size(); i++) {
                 if((int)i != routing_table[packet->source]) {
@@ -63,7 +63,7 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             port[routing_table[packet->destination]]->sendPacket(packet);
         }
     }
-    else if(ats_enable) {
+    else if(RESERVATION_MODE == ATS) {
         if(packet->broadcast) {
             for(size_t i = 0; i < port.size(); i++) {
                 if((int)i != routing_table[packet->source]) {
@@ -78,7 +78,7 @@ void Switch::receivePacket(int port_num, Packet* packet) {
             port[routing_table[packet->destination]]->sendPacket(packet);
         }
     }
-    else if(!priority_queue_enable) {
+    else {
         if(packet->broadcast) {
             for(size_t i = 0; i < port.size(); i++) {
                 if((int)i != routing_table[packet->source]) {
@@ -90,22 +90,6 @@ void Switch::receivePacket(int port_num, Packet* packet) {
         }
         else
             port[routing_table[packet->destination]]->t_queue[packet->p_priority]->push(packet);
-    }
-    else {
-        if(packet->broadcast) {
-            for(size_t i = 0; i < port.size(); i++) {
-                if((int)i != routing_table[packet->source]) {
-                    Packet *newPacket = new Packet(packet);
-                    newPacket->sequence_number = _accumulate_sequence_number++;
-                    port[i]->t_priority_queue[packet->p_priority]->push(newPacket);
-                }
-            }
-            delete packet;
-        }
-        else {
-            packet->sequence_number = _accumulate_sequence_number++;
-            port[routing_table[packet->destination]]->t_priority_queue[packet->p_priority]->push(packet);
-        }
     }
 }
 

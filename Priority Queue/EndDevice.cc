@@ -39,7 +39,7 @@ void EndDevice::receivePacket(Packet* packet) {
     if(packet->broadcast) {
 
     }
-    else if(time_reservation_enable) {
+    else if(RESERVATION_MODE == TIME_RESERVATION) {
         if(packet->reservation_state == TALKER_ATTRIBUTE) {
             double delay = (packet->acc_slot_count + 1) * slot_duration + (int)floor((double)packet->packet_size / rate / us);
             Packet *new_packet = new Packet(packet);
@@ -73,7 +73,7 @@ void EndDevice::receivePacket(Packet* packet) {
             return;
         }
     }
-    else if(ats_enable) {
+    else if(RESERVATION_MODE == ATS) {
         if(packet->reservation_state == TALKER_ATTRIBUTE) {
             Packet *new_packet = new Packet(packet);
             new_packet->source = packet->destination;
@@ -112,7 +112,7 @@ void EndDevice::receivePacket(Packet* packet) {
         acc_latency += latency;
         flow_cnt++;
         if(write_to_file) {
-            std::string mode = ats_enable ? "ats_" : (time_reservation_enable ? "tr_" : "");
+            std::string mode = RESERVATION_MODE == ATS ? "ats_" : (RESERVATION_MODE == TIME_RESERVATION ? "tr_" : "");
             output_file.open(mode + std::to_string(packet->p_flow_id) + ".txt", std::ios_base::app);
             output_file << latency << std::endl;
             output_file.close();

@@ -29,22 +29,22 @@ SWPort::~SWPort() {
 
 void SWPort::receivePacket(Packet* packet) {
     if(packet->reservation_state == LISTENER_ACCEPT) {
-        if(time_reservation_enable)
+        if(RESERVATION_MODE == TIME_RESERVATION)
             acceptTimeSlot(packet);
-        else if(ats_enable)
+        else if(RESERVATION_MODE == ATS)
             acceptBandwidth(packet);
     }
     else if(packet->reservation_state == LISTENER_REJECT) {
-        if(time_reservation_enable)
+        if(RESERVATION_MODE == TIME_RESERVATION)
             offset_table.erase(_pforward->flow_id);
-        else if(ats_enable)
+        else if(RESERVATION_MODE == ATS)
             ats_scheduler_table.erase(_pforward->flow_id);
     }
     sw->receivePacket(port_num, packet);
 }
 
 void SWPort::sendPacket(Packet* packet) {
-    if(time_reservation_enable) {
+    if(RESERVATION_MODE == TIME_RESERVATION) {
         if(offset_table.find(packet->p_flow_id) != offset_table.end()) {
             std::pair<Packet*, long long> scheduled_packet;
             scheduled_packet.first = packet;
@@ -56,7 +56,7 @@ void SWPort::sendPacket(Packet* packet) {
             be_queue.push(packet);
         }
     }
-    else if(ats_enable) {
+    else if(RESERVATION_MODE == ATS) {
         if(packet->p_priority == 0) {
             be_queue.push(packet);
         }
@@ -87,7 +87,7 @@ void SWPort::run(long long time) {
         }
     }
     if(_pforward == nullptr) {
-        if(time_reservation_enable) {
+        if(RESERVATION_MODE == TIME_RESERVATION) {
             int selected_index = -1;
             for(size_t i = 0; i < scheduled_buffer.size(); i++) {
                 if((int)scheduled_buffer[i].second == current_slot) {
@@ -128,7 +128,7 @@ void SWPort::run(long long time) {
                 be_queue.pop();
             }
         }
-        else if(ats_enable) {
+        else if(RESERVATION_MODE == ATS) {
             int selected_index = -1;
             for(size_t i = 0; i < scheduled_buffer.size(); i++) {
                 if(scheduled_buffer[i].second <= time) {
@@ -158,24 +158,13 @@ void SWPort::run(long long time) {
         }
         // Strict Priority
         // FIFO
-        else if(!priority_queue_enable) {
+        else {
             for(int i = t_queue.size() - 1; i >= 0; i--) {
                 if(t_queue[i]->size() != 0) {
                     // Dequeue packet and put to forwarding state
                     _pforward = t_queue[i]->front();
                     _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                     t_queue[i]->pop();
-                    break;
-                }
-            }
-        }
-        // Priority Queue
-        else {
-            for(int i = t_priority_queue.size() - 1; i >= 0; i--) {
-                if(t_priority_queue[i]->size() != 0) {
-                    _pforward = t_priority_queue[i]->top();
-                    _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
-                    t_priority_queue[i]->pop();
                     break;
                 }
             }
