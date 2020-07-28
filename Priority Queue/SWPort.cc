@@ -36,9 +36,9 @@ void SWPort::receivePacket(Packet* packet) {
     }
     else if(packet->reservation_state == LISTENER_REJECT) {
         if(RESERVATION_MODE == TIME_RESERVATION)
-            offset_table.erase(_pforward->flow_id);
+            offset_table.erase(offset_table.find(packet->flow_id));
         else if(RESERVATION_MODE == ATS)
-            ats_scheduler_table.erase(_pforward->flow_id);
+            ats_scheduler_table.erase(ats_scheduler_table.find(packet->flow_id));
     }
     sw->receivePacket(port_num, packet);
 }
@@ -111,9 +111,9 @@ void SWPort::run(long long time) {
                 int idle_size = 0; // bit
                 idle_size += (int)floor((floor(time / (slot_duration*100) + 1) - time / (slot_duration*100)) * slot_duration * us * link_speed);
                 for(int i = 1; i < cycle; i++) {
-                    if(time_slot.find((current_slot + i + 1) % cycle) == time_slot.end())
+                    if(time_slot.find((current_slot + i) % cycle) == time_slot.end())
                         idle_size += (int)std::round((double)slot_duration * us * link_speed);
-                    else if(time_slot[(current_slot + i + 1) % cycle] == 0)
+                    else if(time_slot[(current_slot + i) % cycle] == 0)
                         idle_size += (int)std::round((double)slot_duration * us * link_speed);
                     else
                         break;
@@ -131,15 +131,20 @@ void SWPort::run(long long time) {
         }
         else if(RESERVATION_MODE == ATS) {
             int selected_index = -1;
+            int selected_prioirty = 0;
             for(size_t i = 0; i < scheduled_buffer.size(); i++) {
                 if(scheduled_buffer[i].second <= time) {
                     if(_pforward == nullptr) {
                         _pforward = scheduled_buffer[i].first;
                         selected_index = i;
+                        selected_prioirty = _pforward->priority;
                     }
                     if(scheduled_buffer[selected_index].second > scheduled_buffer[i].second) {
-                        _pforward = scheduled_buffer[i].first;
-                        selected_index = i;
+                        if(selected_prioirty <= scheduled_buffer[i].first->priority) {
+                            _pforward = scheduled_buffer[i].first;
+                            selected_index = i;
+                            selected_prioirty = _pforward->priority;
+                        }
                     }
                 }
             }
@@ -331,23 +336,29 @@ bool SWPort::reserveBandwidth(Packet *packet) {
     double max_delay = 0.0f;
     for(auto iter = reserved_table.begin(); iter != reserved_table.end(); iter++) {
         Packet *h = iter->second;
+        if(h->priority != packet->priority)
+            continue;
+
         int burst_size = 0;
         double higher_rate = 0.0f;
         for(auto jter = reserved_table.begin(); jter != reserved_table.end(); jter++) {
             Packet *g = jter->second;
             if(g->priority > h->priority) {
                 burst_size += g->packet_size;
-                higher_rate += g->packet_size / (g->period * us);
+                higher_rate += (double)g->packet_size / (g->period * us);
             }
-            if(g->priority == h->priority && g->flow_id != h->flow_id) {
+            if(g->priority == h->priority) {
                 burst_size += g->packet_size;
             }
         }
-        double tmp = (burst_size - h->packet_size + 12000) / (link_speed - higher_rate) + h->packet_size / link_speed;
+        double tmp = ((double)(burst_size - h->packet_size + 12000) / (link_speed - higher_rate) + h->packet_size / link_speed) / us;
         max_delay = std::max(tmp, max_delay);
+        //printf("%d %.4f\n", sw->ID, (burst_size - h->packet_size + 12000) / (link_speed - higher_rate));
     }
 
-    printf("%d %.4f\n", sw->ID, max_delay);
+    reserved_table.erase(reserved_table.find(packet->flow_id));
+
+    //printf("%d %.4f\n", sw->ID, max_delay);
     if(max_delay > packet->per_hop_deadline) {
         Packet *new_packet = new Packet(packet);
         new_packet->source = packet->destination;
@@ -363,5 +374,10 @@ bool SWPort::reserveBandwidth(Packet *packet) {
 
 void SWPort::acceptBandwidth(Packet *packet) {
     ats_scheduler_list[ats_scheduler_table[packet->flow_id]]->bucket_empty_time = 0;
+    Packet *new_packet = new Packet(packet);
+    new_packet->period = packet->period;
+    new_packet->packet_size = packet->packet_size;
+    new_packet->flow_id = packet->flow_id;
+    reserved_table[packet->flow_id] = new_packet;
     return;
 }
