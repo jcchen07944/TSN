@@ -121,6 +121,14 @@ void EndDevice::receivePacket(Packet* packet) {
         printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, _time / 100.0d, latency);
         //}
     }
+    else {
+        if(write_to_file) {
+            std::string mode = RESERVATION_MODE == ATS ? "ats_" : (RESERVATION_MODE == TIME_RESERVATION ? "tr_" : "");
+            output_file.open(mode + "BE.txt", std::ios_base::app);
+            output_file << latency << std::endl;
+            output_file.close();
+        }
+    }
 
     delete packet;
 
