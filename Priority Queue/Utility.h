@@ -6,8 +6,6 @@
 
 class Utility {
 public:
-    int hop_count; // For ATS reservation
-
 	Utility();
 
 	~Utility();

@@ -16,6 +16,7 @@ public:
     int source; // Mac Address
     int destination; // Mac Address
     int start_time;
+    int hop_count; // For ATS reservation
 
     /* For packet information */
     int packet_id;
