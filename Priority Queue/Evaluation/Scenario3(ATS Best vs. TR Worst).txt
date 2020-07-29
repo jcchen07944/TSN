@@ -44,7 +44,7 @@ int main() {
     utility.broadcastEndDevice(sw, ed);
 
 
-    int TSN_FLOW_COUNT = 144;
+    int TSN_FLOW_COUNT = 72;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 9;
     std::vector<Flow*> TSN;
@@ -71,127 +71,127 @@ int main() {
     //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0); // 5.12%
 
     for(int i = 0; i < TSN_FLOW_COUNT / 24; i++) {
-        utility.setupTSN(TSN[i*8], 450, 512, 1, 2, 0); //
-        TSN[i*8]->hop_count = 1;
+        utility.setupTSN(TSN[i*8], 450, 512, 6, 2, 0); //
+        TSN[i*8]->hop_count = 3;
         TSN[i*8]->priority = 5;
         utility.reserveTSN(TSN[i*8], sw, ed);
 
-        utility.setupTSN(TSN[i*8+1], 450, 512, 1, 2, 0); //
-        TSN[i*8+1]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+1], 450, 512, 6, 2, 0); //
+        TSN[i*8+1]->hop_count = 3;
         TSN[i*8+1]->priority = 5;
         utility.reserveTSN(TSN[i*8+1], sw, ed);
 
-        utility.setupTSN(TSN[i*8+2], 450, 256, 1, 2, 0); //
-        TSN[i*8+2]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+2], 450, 256, 6, 2, 0); //
+        TSN[i*8+2]->hop_count = 3;
         TSN[i*8+2]->priority = 5;
         utility.reserveTSN(TSN[i*8+2], sw, ed);
 
-        utility.setupTSN(TSN[i*8+3], 450, 256, 1, 2, 0); //
-        TSN[i*8+3]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+3], 450, 256, 6, 2, 0); //
+        TSN[i*8+3]->hop_count = 3;
         TSN[i*8+3]->priority = 5;
         utility.reserveTSN(TSN[i*8+3], sw, ed);
 
-        utility.setupTSN(TSN[i*8+4], 450, 128, 1, 2, 0); //
-        TSN[i*8+4]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+4], 450, 128, 6, 2, 0); //
+        TSN[i*8+4]->hop_count = 3;
         TSN[i*8+4]->priority = 5;
         utility.reserveTSN(TSN[i*8+4], sw, ed);
 
-        utility.setupTSN(TSN[i*8+5], 450, 128, 1, 2, 0); //
-        TSN[i*8+5]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+5], 450, 128, 6, 2, 0); //
+        TSN[i*8+5]->hop_count = 3;
         TSN[i*8+5]->priority = 5;
         utility.reserveTSN(TSN[i*8+5], sw, ed);
 
-        utility.setupTSN(TSN[i*8+6], 450, 64, 1, 2, 0); //
-        TSN[i*8+6]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+6], 450, 64, 6, 2, 0); //
+        TSN[i*8+6]->hop_count = 3;
         TSN[i*8+6]->priority = 5;
         utility.reserveTSN(TSN[i*8+6], sw, ed);
 
-        utility.setupTSN(TSN[i*8+7], 450, 64, 1, 2, 0); //
-        TSN[i*8+7]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+7], 450, 64, 6, 2, 0); //
+        TSN[i*8+7]->hop_count = 3;
         TSN[i*8+7]->priority = 5;
         utility.reserveTSN(TSN[i*8+7], sw, ed);
     }
 
     for(int i = TSN_FLOW_COUNT / 24; i < TSN_FLOW_COUNT / 24 * 2; i++) {
-        utility.setupTSN(TSN[i*8], 300, 512, 1, 2, 0); //
-        TSN[i*8]->hop_count = 1;
+        utility.setupTSN(TSN[i*8], 300, 512, 6, 2, 0); //
+        TSN[i*8]->hop_count = 3;
         TSN[i*8]->priority = 6;
         utility.reserveTSN(TSN[i*8], sw, ed);
 
-        utility.setupTSN(TSN[i*8+1], 300, 512, 1, 2, 0); //
-        TSN[i*8+1]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+1], 300, 512, 6, 2, 0); //
+        TSN[i*8+1]->hop_count = 3;
         TSN[i*8+1]->priority = 6;
         utility.reserveTSN(TSN[i*8+1], sw, ed);
 
-        utility.setupTSN(TSN[i*8+2], 300, 256, 1, 2, 0); //
-        TSN[i*8+2]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+2], 300, 256, 6, 2, 0); //
+        TSN[i*8+2]->hop_count = 3;
         TSN[i*8+2]->priority = 6;
         utility.reserveTSN(TSN[i*8+2], sw, ed);
 
-        utility.setupTSN(TSN[i*8+3], 300, 256, 1, 2, 0); //
-        TSN[i*8+3]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+3], 300, 256, 6, 2, 0); //
+        TSN[i*8+3]->hop_count = 3;
         TSN[i*8+3]->priority = 6;
         utility.reserveTSN(TSN[i*8+3], sw, ed);
 
-        utility.setupTSN(TSN[i*8+4], 300, 128, 1, 2, 0); //
-        TSN[i*8+4]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+4], 300, 128, 6, 2, 0); //
+        TSN[i*8+4]->hop_count = 3;
         TSN[i*8+4]->priority = 6;
         utility.reserveTSN(TSN[i*8+4], sw, ed);
 
-        utility.setupTSN(TSN[i*8+5], 300, 128, 1, 2, 0); //
-        TSN[i*8+5]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+5], 300, 128, 6, 2, 0); //
+        TSN[i*8+5]->hop_count = 3;
         TSN[i*8+5]->priority = 6;
         utility.reserveTSN(TSN[i*8+5], sw, ed);
 
-        utility.setupTSN(TSN[i*8+6], 300, 64, 1, 2, 0); //
-        TSN[i*8+6]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+6], 300, 64, 6, 2, 0); //
+        TSN[i*8+6]->hop_count = 3;
         TSN[i*8+6]->priority = 6;
         utility.reserveTSN(TSN[i*8+6], sw, ed);
 
-        utility.setupTSN(TSN[i*8+7], 300, 64, 1, 2, 0); //
-        TSN[i*8+7]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+7], 300, 64, 6, 2, 0); //
+        TSN[i*8+7]->hop_count = 3;
         TSN[i*8+7]->priority = 6;
         utility.reserveTSN(TSN[i*8+7], sw, ed);
     }
 
     for(int i = TSN_FLOW_COUNT / 24 * 2; i < TSN_FLOW_COUNT / 24 * 3; i++) {
-        utility.setupTSN(TSN[i*8], 150, 512, 1, 2, 0); //
-        TSN[i*8]->hop_count = 1;
+        utility.setupTSN(TSN[i*8], 150, 512, 6, 2, 0); //
+        TSN[i*8]->hop_count = 3;
         TSN[i*8]->priority = 7;
         utility.reserveTSN(TSN[i*8], sw, ed);
 
-        utility.setupTSN(TSN[i*8+1], 150, 512, 1, 2, 0); //
-        TSN[i*8+1]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+1], 150, 512, 6, 2, 0); //
+        TSN[i*8+1]->hop_count = 3;
         TSN[i*8+1]->priority = 7;
         utility.reserveTSN(TSN[i*8+1], sw, ed);
 
-        utility.setupTSN(TSN[i*8+2], 150, 256, 1, 2, 0); //
-        TSN[i*8+2]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+2], 150, 256, 6, 2, 0); //
+        TSN[i*8+2]->hop_count = 3;
         TSN[i*8+2]->priority = 7;
         utility.reserveTSN(TSN[i*8+2], sw, ed);
 
-        utility.setupTSN(TSN[i*8+3], 150, 256, 1, 2, 0); //
-        TSN[i*8+3]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+3], 150, 256, 6, 2, 0); //
+        TSN[i*8+3]->hop_count = 3;
         TSN[i*8+3]->priority = 7;
         utility.reserveTSN(TSN[i*8+3], sw, ed);
 
-        utility.setupTSN(TSN[i*8+4], 150, 128, 1, 2, 0); //
-        TSN[i*8+4]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+4], 150, 128, 6, 2, 0); //
+        TSN[i*8+4]->hop_count = 3;
         TSN[i*8+4]->priority = 7;
         utility.reserveTSN(TSN[i*8+4], sw, ed);
 
-        utility.setupTSN(TSN[i*8+5], 150, 128, 1, 2, 0); //
-        TSN[i*8+5]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+5], 150, 128, 6, 2, 0); //
+        TSN[i*8+5]->hop_count = 3;
         TSN[i*8+5]->priority = 7;
         utility.reserveTSN(TSN[i*8+5], sw, ed);
 
-        utility.setupTSN(TSN[i*8+6], 150, 64, 1, 2, 0); //
-        TSN[i*8+6]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+6], 150, 64, 6, 2, 0); //
+        TSN[i*8+6]->hop_count = 3;
         TSN[i*8+6]->priority = 7;
         utility.reserveTSN(TSN[i*8+6], sw, ed);
 
-        utility.setupTSN(TSN[i*8+7], 150, 64, 1, 2, 0); //
-        TSN[i*8+7]->hop_count = 1;
+        utility.setupTSN(TSN[i*8+7], 150, 64, 6, 2, 0); //
+        TSN[i*8+7]->hop_count = 3;
         TSN[i*8+7]->priority = 7;
         utility.reserveTSN(TSN[i*8+7], sw, ed);
     }
@@ -215,6 +215,6 @@ int main() {
     }
 
     printf("Maximum delay: %.4f, Average delay: %.4f\n", ed[2]->max_latency, ed[2]->acc_latency/ed[2]->flow_cnt);
-    printf("Accept flow: %d, Reject flow: %d\n", ed[1]->accept_flow + ed[6]->accept_flow, ed[1]->reject_flow + ed[6]->reject_flow);
+    printf("Accept flow: %d, Reject flow: %d\n", ed[4]->accept_flow + ed[6]->accept_flow, ed[4]->reject_flow + ed[6]->reject_flow);
     return 0;
 }
