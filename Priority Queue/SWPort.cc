@@ -21,6 +21,9 @@ SWPort::SWPort(int port_num, Switch *sw, double rate) {
 
     cycle = 3;
     current_slot = 0;
+
+    for(int i = 0; i < 8; i++)
+        group_eligibility_time.push_back(0);
 }
 
 SWPort::~SWPort() {
@@ -134,16 +137,15 @@ void SWPort::run(long long time) {
             int selected_prioirty = 0;
             for(size_t i = 0; i < scheduled_buffer.size(); i++) {
                 if(scheduled_buffer[i].second <= time) {
-                    if(_pforward == nullptr) {
+                    if(selected_prioirty < scheduled_buffer[i].first->priority) {
                         _pforward = scheduled_buffer[i].first;
                         selected_index = i;
                         selected_prioirty = _pforward->priority;
                     }
-                    if(scheduled_buffer[selected_index].second > scheduled_buffer[i].second) {
-                        if(selected_prioirty <= scheduled_buffer[i].first->priority) {
+                    else if(selected_prioirty == scheduled_buffer[i].first->priority) {
+                        if(scheduled_buffer[selected_index].second > scheduled_buffer[i].second) {
                             _pforward = scheduled_buffer[i].first;
                             selected_index = i;
-                            selected_prioirty = _pforward->priority;
                         }
                     }
                 }
@@ -319,9 +321,7 @@ void SWPort::acceptTimeSlot(Packet *packet) {
 }
 
 bool SWPort::reserveBandwidth(Packet *packet) {
-    if(group_eligibility_time.size() == 0)
-        group_eligibility_time.push_back(0);
-    ATSScheduler *ats_scheduler = new ATSScheduler(ats_scheduler_list.size(), 0);
+    ATSScheduler *ats_scheduler = new ATSScheduler(ats_scheduler_list.size(), packet->priority);
     ats_scheduler->committed_burst_size = packet->packet_size;
     ats_scheduler->committed_information_rate = packet->packet_size / (packet->period * us);
     ats_scheduler_table[packet->flow_id] = ats_scheduler_list.size();
@@ -358,7 +358,7 @@ bool SWPort::reserveBandwidth(Packet *packet) {
 
     reserved_table.erase(reserved_table.find(packet->flow_id));
 
-    //printf("%d %.4f\n", sw->ID, max_delay);
+    printf("%d %.4f\n", sw->ID, max_delay);
     if(max_delay > packet->per_hop_deadline) {
         Packet *new_packet = new Packet(packet);
         new_packet->source = packet->destination;
