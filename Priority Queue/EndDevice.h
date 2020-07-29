@@ -23,6 +23,9 @@ public:
     double acc_latency;
     int flow_cnt;
 
+    int accept_flow;
+    int reject_flow;
+
     EndDevice(int ID);
 
     ~EndDevice();

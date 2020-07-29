@@ -14,6 +14,8 @@ EndDevice::EndDevice(int ID) {
     max_latency = 0.0f;
     acc_latency = 0.0f;
     flow_cnt = 0;
+    accept_flow = 0;
+    reject_flow = 0;
 }
 
 EndDevice::~EndDevice() {
@@ -63,12 +65,14 @@ void EndDevice::receivePacket(Packet* packet) {
         else if(packet->reservation_state == LISTENER_ACCEPT) {
             // Reserve success
             printf("Flow ID : %d, Accept\n", packet->flow_id);
+            accept_flow++;
             delete packet;
             return;
         }
         else if(packet->reservation_state == LISTENER_REJECT) {
             // Reserve failed
             printf("Flow ID : %d, Reject\n", packet->flow_id);
+            reject_flow++;
             delete packet;
             return;
         }
@@ -94,12 +98,14 @@ void EndDevice::receivePacket(Packet* packet) {
         else if(packet->reservation_state == LISTENER_ACCEPT) {
             // Reserve success
             printf("Flow ID : %d, Accept\n", packet->flow_id);
+            accept_flow++;
             delete packet;
             return;
         }
         else if(packet->reservation_state == LISTENER_REJECT) {
             // Reserve failed
             printf("Flow ID : %d, Reject\n", packet->flow_id);
+            reject_flow++;
             delete packet;
             return;
         }
