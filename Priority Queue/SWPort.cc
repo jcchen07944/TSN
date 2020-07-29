@@ -40,8 +40,10 @@ void SWPort::receivePacket(Packet* packet) {
     else if(packet->reservation_state == LISTENER_REJECT) {
         if(RESERVATION_MODE == TIME_RESERVATION)
             offset_table.erase(offset_table.find(packet->flow_id));
-        else if(RESERVATION_MODE == ATS)
+        else if(RESERVATION_MODE == ATS) {
             ats_scheduler_table.erase(ats_scheduler_table.find(packet->flow_id));
+            reserved_table.erase(reserved_table.find(packet->flow_id));
+        }
     }
     sw->receivePacket(port_num, packet);
 }
@@ -333,41 +335,45 @@ bool SWPort::reserveBandwidth(Packet *packet) {
     new_packet->flow_id = packet->flow_id;
     reserved_table[packet->flow_id] = new_packet;
 
-    double max_delay = 0.0f;
-    for(auto iter = reserved_table.begin(); iter != reserved_table.end(); iter++) {
-        Packet *h = iter->second;
-        if(h->priority != packet->priority)
-            continue;
+    for(auto kter = reserved_table.begin(); kter != reserved_table.end(); kter++) {
+        new_packet = kter->second;
+        double max_delay = 0.0f;
+        for(auto iter = reserved_table.begin(); iter != reserved_table.end(); iter++) {
+            Packet *h = iter->second;
+            if(h->priority != new_packet->priority)
+                continue;
 
-        int burst_size = 0;
-        double higher_rate = 0.0f;
-        for(auto jter = reserved_table.begin(); jter != reserved_table.end(); jter++) {
-            Packet *g = jter->second;
-            if(g->priority > h->priority) {
-                burst_size += g->packet_size;
-                higher_rate += (double)g->packet_size / (g->period * us);
+            int burst_size = 0;
+            double higher_rate = 0.0f;
+            for(auto jter = reserved_table.begin(); jter != reserved_table.end(); jter++) {
+                Packet *g = jter->second;
+                if(g->priority > h->priority) {
+                    burst_size += g->packet_size;
+                    higher_rate += (double)g->packet_size / (g->period * us);
+                }
+                if(g->priority == h->priority) {
+                    burst_size += g->packet_size;
+                }
             }
-            if(g->priority == h->priority) {
-                burst_size += g->packet_size;
-            }
+            double tmp = ((double)(burst_size - h->packet_size + 12000) / (link_speed - higher_rate) + h->packet_size / link_speed) / us;
+            max_delay = std::max(tmp, max_delay);
+            //printf("%d %.4f\n", sw->ID, (burst_size - h->packet_size + 12000) / (link_speed - higher_rate));
         }
-        double tmp = ((double)(burst_size - h->packet_size + 12000) / (link_speed - higher_rate) + h->packet_size / link_speed) / us;
-        max_delay = std::max(tmp, max_delay);
-        //printf("%d %.4f\n", sw->ID, (burst_size - h->packet_size + 12000) / (link_speed - higher_rate));
-    }
 
-    reserved_table.erase(reserved_table.find(packet->flow_id));
-
-    printf("%d %.4f\n", sw->ID, max_delay);
-    if(max_delay > packet->per_hop_deadline) {
-        Packet *new_packet = new Packet(packet);
-        new_packet->source = packet->destination;
-        new_packet->destination = packet->source;
-        new_packet->reservation_state = LISTENER_REJECT;
-        new_packet->flow_id = packet->flow_id;
-        sw->receivePacket(port_num, new_packet);
-        delete packet;
-        return false;
+        if(new_packet->flow_id == packet->flow_id)
+            packet->acc_max_latency += max_delay;
+        //printf("Switch %d, Flow %d, Max delay %.4f\n", sw->ID, new_packet->flow_id, max_delay);
+        if(max_delay > new_packet->per_hop_deadline) {
+            reserved_table.erase(reserved_table.find(packet->flow_id));
+            Packet *new_packet = new Packet(packet);
+            new_packet->source = packet->destination;
+            new_packet->destination = packet->source;
+            new_packet->reservation_state = LISTENER_REJECT;
+            new_packet->flow_id = packet->flow_id;
+            sw->receivePacket(port_num, new_packet);
+            delete packet;
+            return false;
+        }
     }
     return true;
 }
