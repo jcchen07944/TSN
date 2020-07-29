@@ -89,6 +89,7 @@ void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevi
 
     ed[TSN->source]->sendPacket(talker_attribute);
 
+    resetNetworkTime(sw, ed);
     long long int time = 0;
     while(time++ < 10000) {
         for(size_t i = 0; i < ed.size(); i++)
