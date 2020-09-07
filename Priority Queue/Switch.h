@@ -22,8 +22,7 @@ public:
     std::vector<SWPort*> port;
     std::map<int, int> routing_table; // <MAC, Port>
 
-    /* For Asynchronous Traffic Shaper */
-    std::vector<std::pair<Packet*, double> > reserved_flows; // <reserved_flow_info, maximum_delay>
+    int max_buffer_used;
 
     Switch(int ID);
 
