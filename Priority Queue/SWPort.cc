@@ -24,6 +24,8 @@ SWPort::SWPort(int port_num, Switch *sw, double rate) {
 
     for(int i = 0; i < 8; i++)
         group_eligibility_time.push_back(0);
+
+    buffer_used = 0;
 }
 
 SWPort::~SWPort() {
@@ -55,6 +57,8 @@ void SWPort::sendPacket(Packet* packet) {
             scheduled_packet.first = packet;
             scheduled_packet.second = (long long)getEligibilitySlot(packet);
             scheduled_buffer.push_back(scheduled_packet);
+            buffer_used += packet->p_size;
+            sw->max_buffer_used = std::max(sw->max_buffer_used, buffer_used);
             //printf("Switch %d, Flow %d, %d\n", sw->ID, packet->p_flow_id, getEligibilitySlot(packet));
         }
         else {
@@ -71,6 +75,8 @@ void SWPort::sendPacket(Packet* packet) {
             scheduled_packet.second = ats_scheduler_list[ats_scheduler_table[packet->p_flow_id]]->getEligibilityTime(packet, group_eligibility_time);
             //printf("Switch %d, Flow %d, %lld\n", sw->ID, packet->p_flow_id, scheduled_packet.second);
             scheduled_buffer.push_back(scheduled_packet);
+            buffer_used += packet->p_size;
+            sw->max_buffer_used = std::max(sw->max_buffer_used, buffer_used);
         }
     }
 }
@@ -110,6 +116,7 @@ void SWPort::run(long long time) {
                 //printf("Switch %d, Flow %d, Time %.4f, Slot %d\n", sw->ID, _pforward->p_flow_id, time/100.0, current_slot);
                 _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                 scheduled_buffer.erase(scheduled_buffer.begin() + selected_index);
+                buffer_used -= _pforward->p_size;
             }
             else if(be_queue.size() > 0) {
                 //printf("%f %f\n", ((double)be_queue.front()->p_size / rate / us * 100.0d + time) / (slot_duration*100), time / (slot_duration*100));
@@ -156,6 +163,7 @@ void SWPort::run(long long time) {
                 //printf("Switch %d, Flow %d, Time %.4f, Slot %d\n", sw->ID, _pforward->p_flow_id, time/100.0, current_slot);
                 _tforward = time + (int)floor((double)_pforward->p_size / rate / us * 100.0d);
                 scheduled_buffer.erase(scheduled_buffer.begin() + selected_index);
+                buffer_used -= _pforward->p_size;
             }
             else if(be_queue.size() > 0) {
                 _pforward = be_queue.front();

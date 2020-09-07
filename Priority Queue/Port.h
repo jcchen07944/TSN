@@ -51,6 +51,8 @@ public:
     std::vector<std::pair<Packet*, long long> > scheduled_buffer; // <packet, scheduled_slot> or <packet, scheduled_time>
     std::map<int, Packet*> reserved_table; // <flow_id, flow_info>
 
+    int buffer_used;
+
     /* For Time-reservation */
     int current_slot;
     int cycle; // time slot number in a cycle

@@ -26,13 +26,13 @@ int main() {
         sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
     utility.connectToSwitch(sw[0], ed[0]);
-    utility.connectToSwitch(sw[0], ed[1]);
-    //utility.connectToSwitch(sw[0], sw[1]);
+    utility.connectToSwitch(sw[1], ed[1]);
+    utility.connectToSwitch(sw[0], sw[1]);
     //utility.connectToSwitch(sw[1], sw[2]);
 
     utility.broadcastEndDevice(sw, ed);
 
-    int TSN_FLOW_COUNT = 300;
+    int TSN_FLOW_COUNT = 123;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 0;
     std::vector<Flow*> TSN;
@@ -51,7 +51,6 @@ int main() {
     //utility.setupAVB(AVB[0], 'A', 400, 0, 1, 0); // 2.56%
     //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0); // 5.12%
 
-    //int p = 320;
     for(int i = 0; i < TSN_FLOW_COUNT; i++) {
         utility.setupTSN(TSN[i], 150, 64, 0, 1, 0);
         TSN[i]->hop_count = 1;
@@ -61,7 +60,7 @@ int main() {
 
     utility.resetNetworkTime(sw, ed);
     long long time = 0;
-    while(time < 10000) { // 1 second
+    while(time < 1000000) { // 1 second
         for(int i = 0; i < TSN_FLOW_COUNT; i++)
             TSN[i]->run(ed[TSN[i]->source], TSN_FLOW);
         for(int i = 0; i < AVB_FLOW_COUNT; i++)
@@ -79,5 +78,6 @@ int main() {
 
     printf("Maximum delay: %.4f, Average delay: %.4f\n", ed[1]->max_latency, ed[1]->acc_latency/ed[1]->flow_cnt);
     printf("Accept flow: %d, Reject flow: %d\n", ed[0]->accept_flow, ed[0]->reject_flow);
+    printf("Max buffer used: \n  Switch1: %d\n  Switch2: %d\n", sw[0]->max_buffer_used, sw[1]->max_buffer_used);
     return 0;
 }

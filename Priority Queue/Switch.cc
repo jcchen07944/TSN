@@ -13,6 +13,7 @@ Switch::Switch(int ID) {
 
     this->ID = ID;
     rate = link_speed;
+    max_buffer_used = 0;
 }
 
 Switch::~Switch() {
