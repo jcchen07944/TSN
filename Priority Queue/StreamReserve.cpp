@@ -14,8 +14,8 @@
 int main() {
     Utility utility;
 
-    const int END_DEVICE_COUNT = 2;
-    const int SWITCH_COUNT = 1;
+    const int END_DEVICE_COUNT = 8;
+    const int SWITCH_COUNT = 4;
 
     std::vector<EndDevice*> ed;
     std::vector<Switch*> sw;
@@ -26,13 +26,48 @@ int main() {
     for(int i = 0; i < SWITCH_COUNT; i++)
         sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
+    // Cycle Topology
     utility.connectToSwitch(sw[0], ed[0]);
     utility.connectToSwitch(sw[0], ed[1]);
-    //utility.connectToSwitch(sw[1], sw[2]);
+    utility.connectToSwitch(sw[1], ed[2]);
+    utility.connectToSwitch(sw[1], ed[3]);
+    utility.connectToSwitch(sw[2], ed[4]);
+    utility.connectToSwitch(sw[2], ed[5]);
+    utility.connectToSwitch(sw[3], ed[6]);
+    utility.connectToSwitch(sw[3], ed[7]);
 
-    utility.broadcastEndDevice(sw, ed);
+    utility.connectToSwitch(sw[0], sw[1]);
+    utility.connectToSwitch(sw[1], sw[2]);
+    utility.connectToSwitch(sw[2], sw[3]);
+    utility.connectToSwitch(sw[3], sw[0]);
 
-    int TSN_FLOW_COUNT = 200;
+    //utility.broadcastEndDevice(sw, ed);
+    for(int i = 0; i < 8; i++)
+        sw[0]->routing_table[i] = 2;
+    sw[0]->routing_table[0] = 0;
+    sw[0]->routing_table[1] = 1;
+    for(int i = 0; i < 8; i++)
+        sw[1]->routing_table[i] = 3;
+    sw[1]->routing_table[2] = 0;
+    sw[1]->routing_table[3] = 1;
+    for(int i = 0; i < 8; i++)
+        sw[2]->routing_table[i] = 3;
+    sw[2]->routing_table[4] = 0;
+    sw[2]->routing_table[5] = 1;
+    for(int i = 0; i < 8; i++)
+        sw[3]->routing_table[i] = 3;
+    sw[3]->routing_table[6] = 0;
+    sw[3]->routing_table[7] = 1;
+
+    // Debug
+    for(size_t i = 0; i < sw.size(); i++) {
+        printf("Switch ID : %d\n", (int)i);
+        for(auto it = sw[i]->routing_table.cbegin(); it != sw[i]->routing_table.cend(); it++) {
+            printf("Destination %d -> Port %d\n", it->first, it->second);
+        }
+    }
+
+    int TSN_FLOW_COUNT = 1;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 0;
     std::vector<Flow*> TSN;
@@ -51,11 +86,11 @@ int main() {
     //utility.setupAVB(AVB[0], 'A', 400, 0, 1, 0); // 2.56%
     //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0); // 5.12%
 
-    FILE *pFile;
-    pFile = fopen("Computation.txt", "w");
+    //FILE *pFile;
+    //pFile = fopen("Computation.txt", "w");
 
     for(int i = 0; i < TSN_FLOW_COUNT; i++) {
-        utility.setupTSN(TSN[i], 150, 64, 0, 1, 0);
+        utility.setupTSN(TSN[i], 150, 64, 0, 2, 0);
         TSN[i]->hop_count = 1;
         TSN[i]->priority = 7;
         // Timer
@@ -64,10 +99,10 @@ int main() {
         utility.reserveTSN(TSN[i], sw, ed);
 
         double duration = (std::clock() - timer_start) / (double) CLOCKS_PER_SEC;
-        fprintf (pFile, "%d %f\n", i+1, duration);
+        //fprintf (pFile, "%d %f\n", i+1, duration);
     }
 
-    fclose (pFile);
+    //fclose (pFile);
 
     utility.resetNetworkTime(sw, ed);
     long long time = 0;
