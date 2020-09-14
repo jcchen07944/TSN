@@ -3,6 +3,7 @@
 #include <time.h>
 #include <vector>
 #include <ctime>
+#include <random>
 
 #include "Switch.h"
 #include "EndDevice.h"
@@ -26,7 +27,7 @@ int main() {
     for(int i = 0; i < SWITCH_COUNT; i++)
         sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
-    // Cycle Topology
+    // Ring Topology
     utility.connectToSwitch(sw[0], ed[0]);
     utility.connectToSwitch(sw[0], ed[1]);
     utility.connectToSwitch(sw[1], ed[2]);
@@ -41,33 +42,9 @@ int main() {
     utility.connectToSwitch(sw[2], sw[3]);
     utility.connectToSwitch(sw[3], sw[0]);
 
-    //utility.broadcastEndDevice(sw, ed);
-    for(int i = 0; i < 8; i++)
-        sw[0]->routing_table[i] = 2;
-    sw[0]->routing_table[0] = 0;
-    sw[0]->routing_table[1] = 1;
-    for(int i = 0; i < 8; i++)
-        sw[1]->routing_table[i] = 3;
-    sw[1]->routing_table[2] = 0;
-    sw[1]->routing_table[3] = 1;
-    for(int i = 0; i < 8; i++)
-        sw[2]->routing_table[i] = 3;
-    sw[2]->routing_table[4] = 0;
-    sw[2]->routing_table[5] = 1;
-    for(int i = 0; i < 8; i++)
-        sw[3]->routing_table[i] = 3;
-    sw[3]->routing_table[6] = 0;
-    sw[3]->routing_table[7] = 1;
+    utility.broadcastEndDevice(sw, ed);
 
-    // Debug
-    for(size_t i = 0; i < sw.size(); i++) {
-        printf("Switch ID : %d\n", (int)i);
-        for(auto it = sw[i]->routing_table.cbegin(); it != sw[i]->routing_table.cend(); it++) {
-            printf("Destination %d -> Port %d\n", it->first, it->second);
-        }
-    }
-
-    int TSN_FLOW_COUNT = 1;
+    int TSN_FLOW_COUNT = 500;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 0;
     std::vector<Flow*> TSN;
@@ -83,14 +60,21 @@ int main() {
         utility.setupBE(BE[i], 1500, 0, 1); // 120Mbps
     }
 
-    //utility.setupAVB(AVB[0], 'A', 400, 0, 1, 0); // 2.56%
-    //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0); // 5.12%
+    //utility.setupAVB(AVB[0], 'A', 400, 0, 1, 0);
+    //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0);
 
     //FILE *pFile;
     //pFile = fopen("Computation.txt", "w");
 
+    std::default_random_engine generator;
+
     for(int i = 0; i < TSN_FLOW_COUNT; i++) {
-        utility.setupTSN(TSN[i], 150, 64, 0, 2, 0);
+        std::normal_distribution<double> period_distribution(210, 70);
+        std::normal_distribution<double> size_distribution(65, 10);
+        int period = (int)period_distribution(generator) * 5;
+        int packet_size = (int)size_distribution(generator);
+        //printf("Period : %d, Packet Size : %d \n", period, packet_size);
+        utility.setupTSN(TSN[i], period, packet_size, 0, 2, 0);
         TSN[i]->hop_count = 1;
         TSN[i]->priority = 7;
         // Timer
@@ -101,6 +85,7 @@ int main() {
         double duration = (std::clock() - timer_start) / (double) CLOCKS_PER_SEC;
         //fprintf (pFile, "%d %f\n", i+1, duration);
     }
+    return 0;
 
     //fclose (pFile);
 
