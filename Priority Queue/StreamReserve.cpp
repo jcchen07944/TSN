@@ -4,6 +4,7 @@
 #include <vector>
 #include <ctime>
 #include <random>
+#include <cstdlib>
 
 #include "Switch.h"
 #include "EndDevice.h"
@@ -44,18 +45,18 @@ int main() {
 
     utility.broadcastEndDevice(sw, ed);
 
-    int TSN_FLOW_COUNT = 500;
+    int TSN_FLOW_COUNT = 2000;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 0;
     std::vector<Flow*> TSN;
     std::vector<Flow*> AVB;
     std::vector<Flow*> BE;
     for(int i = 0; i < TSN_FLOW_COUNT; i++)
-        TSN.push_back(new Flow(i));
+        TSN.push_back(new Flow(i + 1));
     for(int i = 0; i < AVB_FLOW_COUNT; i++)
-        AVB.push_back(new Flow(i + TSN_FLOW_COUNT));
+        AVB.push_back(new Flow(i + TSN_FLOW_COUNT + 1));
     for(int i = 0; i < BE_FLOW_COUNT; i++)
-        BE.push_back(new Flow(i + TSN_FLOW_COUNT + AVB_FLOW_COUNT));
+        BE.push_back(new Flow(i + TSN_FLOW_COUNT + AVB_FLOW_COUNT + 1));
     for(int i = 0; i < BE_FLOW_COUNT; i++) {
         utility.setupBE(BE[i], 1500, 0, 1); // 120Mbps
     }
@@ -69,14 +70,21 @@ int main() {
     std::default_random_engine generator;
 
     for(int i = 0; i < TSN_FLOW_COUNT; i++) {
-        std::normal_distribution<double> period_distribution(210, 70);
+        std::normal_distribution<double> period_distribution(3, 1);
         std::normal_distribution<double> size_distribution(65, 10);
-        int period = (int)period_distribution(generator) * 5;
+        int period = (int)period_distribution(generator) * 150 + 100;
         int packet_size = (int)size_distribution(generator);
-        //printf("Period : %d, Packet Size : %d \n", period, packet_size);
-        utility.setupTSN(TSN[i], period, packet_size, 0, 2, 0);
-        TSN[i]->hop_count = 1;
-        TSN[i]->priority = 7;
+        std::poisson_distribution<int> time_distribution(period / 2);
+        int start_transmission_time = time_distribution(generator);
+        std::uniform_int_distribution<int> src_distribution(0, 3);
+        std::uniform_int_distribution<int> dst_distribution(0, 3);
+        int src = src_distribution(generator) * 2;
+        int dst = dst_distribution(generator) * 2 + 1;
+        int hop_count = std::min(std::abs(src/2 - dst/2), 4 - std::abs(src/2 - dst/2)) + 1;
+        printf("Period : %d, Packet Size : %d, Time : %d, Src : %d, Dst : %d, Hop Count : %d\n", period, packet_size, start_transmission_time, src, dst, hop_count);
+        utility.setupTSN(TSN[i], period, packet_size, src, dst, 0);
+        TSN[i]->hop_count = hop_count;
+        TSN[i]->priority = 7 - (period - 100)/150;
         // Timer
         std::clock_t timer_start = std::clock();
 
@@ -85,13 +93,13 @@ int main() {
         double duration = (std::clock() - timer_start) / (double) CLOCKS_PER_SEC;
         //fprintf (pFile, "%d %f\n", i+1, duration);
     }
-    return 0;
+    //return 0;
 
     //fclose (pFile);
 
     utility.resetNetworkTime(sw, ed);
     long long time = 0;
-    while(time < 100000) { // 1 second
+    while(time > 100000) { // 1 second
         for(int i = 0; i < TSN_FLOW_COUNT; i++)
             TSN[i]->run(ed[TSN[i]->source], TSN_FLOW);
         for(int i = 0; i < AVB_FLOW_COUNT; i++)
@@ -107,8 +115,14 @@ int main() {
         time++;
     }
 
-    printf("Maximum delay: %.4f, Average delay: %.4f\n", ed[1]->max_latency, ed[1]->acc_latency/ed[1]->flow_cnt);
-    printf("Accept flow: %d, Reject flow: %d\n", ed[0]->accept_flow, ed[0]->reject_flow);
-    printf("Max buffer used: \n  Switch1: %d\n  Switch2: %d\n", sw[0]->max_buffer_used, sw[1]->max_buffer_used);
+    //printf("Maximum delay: %.4f, Average delay: %.4f\n", ed[1]->max_latency, ed[1]->acc_latency/ed[1]->flow_cnt);
+    int accept_flow = 0, reject_flow = 0;
+    for(int i = 0; i < END_DEVICE_COUNT; i++) {
+        accept_flow += ed[i]->accept_flow;
+        reject_flow += ed[i]->reject_flow;
+    }
+
+    printf("Accept flow: %d, Reject flow: %d\n", accept_flow, reject_flow);
+    //printf("Max buffer used: \n  Switch1: %d\n  Switch2: %d\n", sw[0]->max_buffer_used, sw[1]->max_buffer_used);
     return 0;
 }
