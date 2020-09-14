@@ -20,6 +20,8 @@ SWPort::SWPort(int port_num, Switch *sw, double rate) {
     _tforward = 0;
 
     cycle = 3;
+    for(int i = 0; i < cycle; i++)
+        time_slot.push_back(0);
     current_slot = 0;
 
     for(int i = 0; i < 8; i++)
@@ -123,9 +125,7 @@ void SWPort::run(long long time) {
                 int idle_size = 0; // bit
                 idle_size += (int)floor((floor(time / (slot_duration*100) + 1) - time / (slot_duration*100)) * slot_duration * us * link_speed);
                 for(int i = 1; i < cycle; i++) {
-                    if(time_slot.find((current_slot + i) % cycle) == time_slot.end())
-                        idle_size += (int)std::round((double)slot_duration * us * link_speed);
-                    else if(time_slot[(current_slot + i) % cycle] == 0)
+                    if(time_slot[(current_slot + i) % cycle] == 0)
                         idle_size += (int)std::round((double)slot_duration * us * link_speed);
                     else
                         break;
@@ -198,10 +198,11 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
         Utility utility;
         int new_cycle = utility.lcm(cycle, slots_per_period);
         for(int i = cycle; i < new_cycle; i++) {
-            if(time_slot.find(i - cycle) != time_slot.end())
-                time_slot[new_cycle] = time_slot[i - cycle];
+            time_slot.push_back(0);
+            time_slot[i] = time_slot[i - cycle];
         }
         cycle = new_cycle;
+        //printf("%d\n", cycle);
     }
 
     // Find time-slots
@@ -214,8 +215,6 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
 
             int next_time_slot = j * slots_per_period + (i + (int)ceil((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
             //printf("%d %d %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
-            if(time_slot.find(next_time_slot) == time_slot.end())
-                time_slot[next_time_slot] = 0;
             if(time_slot[next_time_slot] == (int)std::round((double)slot_duration * us * link_speed)) { // Reserve first time-slot
                 can_reserve = false;
                 break;
@@ -237,27 +236,21 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
                     break;
                 }
                 else if(k != slot_need - 1) {
-                    if(time_slot.find(next_time_slot + k) != time_slot.end()) {
-                        if(time_slot[next_time_slot + k] != 0) {
-                            can_reserve = false;
-                            break;
-                        }
+                    if(time_slot[next_time_slot + k] != 0) {
+                        can_reserve = false;
+                        break;
                     }
                 }
                 else {
-                    if(time_slot.find(next_time_slot + k) != time_slot.end()) {
-                        if((int)std::round((double)slot_duration * us * link_speed) - time_slot[next_time_slot + k] < packet->packet_size - k * (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) {
-                            can_reserve = false;
-                            break;
-                        }
+                    if((int)std::round((double)slot_duration * us * link_speed) - time_slot[next_time_slot + k] < packet->packet_size - k * (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) {
+                        can_reserve = false;
+                        break;
                     }
                 }
             }
         }
         if(can_reserve) {
             int next_time_slot = (i + (int)ceil((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
-            if(time_slot.find(next_time_slot) == time_slot.end())
-                time_slot[next_time_slot] = 0;
             int slot_need = (int)ceil((packet->packet_size - (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) / std::round((double)slot_duration * us * link_speed));
             slot_need = slot_need < 0? 1 : slot_need + 1;
             //printf("%d %d\n", sw->ID, slot_need);
@@ -300,16 +293,11 @@ void SWPort::acceptTimeSlot(Packet *packet) {
         int next_time_slot = i * slots_per_period + (offset_table[packet->flow_id] + (int)ceil((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
 
         //printf("%d %d\n", sw->ID, next_time_slot);
-        if(time_slot.find(next_time_slot) == time_slot.end())
-            time_slot[next_time_slot] = 0;
 
         int slot_need = (int)ceil((packet->packet_size - (int)std::round((double)slot_duration * us * link_speed) + time_slot[next_time_slot]) / std::round((double)slot_duration * us * link_speed));
         slot_need = slot_need < 0? 1 : slot_need+1;
 
         for(int k = slot_need - 1; k >= 0; k--) {
-            if(time_slot.find(next_time_slot + k) == time_slot.end())
-                time_slot[next_time_slot + k] = 0;
-
             if(k == 0 && slot_need == 1) { // Only need one time-slot
                 time_slot[next_time_slot] += packet->packet_size;
             }
@@ -370,7 +358,7 @@ bool SWPort::reserveBandwidth(Packet *packet) {
 
         if(new_packet->flow_id == packet->flow_id)
             packet->acc_max_latency += max_delay;
-        //printf("Switch %d, Flow %d, Max delay %.4f\n", sw->ID, new_packet->flow_id, max_delay);
+        //printf("Switch %d, Port %d, Flow %d, Max delay %.4f\n", sw->ID, port_num, new_packet->flow_id, max_delay);
         if(max_delay > new_packet->per_hop_deadline) {
             reserved_table.erase(reserved_table.find(packet->flow_id));
             Packet *new_packet = new Packet(packet);

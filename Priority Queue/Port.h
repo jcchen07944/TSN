@@ -57,7 +57,7 @@ public:
     int current_slot;
     int cycle; // time slot number in a cycle
     std::map<int, int> offset_table; // <flow_id, offset>
-    std::map<int, int> time_slot; // <reserved_slot_number, packet_size(bit)>
+    std::vector<int> time_slot; // packet_size(bit)
     double last_transmission_time;
 
     /* For ATS */
