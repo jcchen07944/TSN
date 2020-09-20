@@ -45,7 +45,7 @@ int main() {
 
     utility.broadcastEndDevice(sw, ed);
 
-    int TSN_FLOW_COUNT = 2000;
+    int TSN_FLOW_COUNT = 1000;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 0;
     std::vector<Flow*> TSN;

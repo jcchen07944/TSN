@@ -4,7 +4,7 @@
 const int NO_RESERVATION = -1;
 const int ATS = 0;
 const int TIME_RESERVATION = 1;
-const int RESERVATION_MODE = ATS;
+const int RESERVATION_MODE = TIME_RESERVATION;
 
 const bool write_to_file = false;
 

@@ -260,10 +260,13 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
             /**********BUG*********/
             /** Here need to fix **/
             /**********************/
+            /*
             if(packet->acc_slot_count == 0) // Send by EndDevice
                 packet->start_transmission_time += (i + slot_need)*slot_duration;
             else
                 packet->start_transmission_time += (i + slot_need)*slot_duration;
+            */
+            packet->start_transmission_time = (next_time_slot + 1) * slot_duration;
             packet->acc_slot_count += (i + slot_need);
             //printf("%d %.4f\n", sw->ID, packet->start_transmission_time);
             //printf("%d %d\n", sw->ID, packet->acc_slot_count);
