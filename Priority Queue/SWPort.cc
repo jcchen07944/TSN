@@ -214,7 +214,7 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
         for(int j = 0; j < cycle / slots_per_period; j++) { // How many cycle need to check
 
             int next_time_slot = j * slots_per_period + (i + (int)ceil((packet->start_transmission_time + packet->packet_size/link_speed/us) / slot_duration) - 1) % slots_per_period;
-            //printf("%d %d %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
+            //printf("Switch: %d, Time-slot: %d, Used: %d\n", sw->ID, next_time_slot, time_slot[next_time_slot]);
             if(time_slot[next_time_slot] == (int)std::round((double)slot_duration * us * link_speed)) { // Reserve first time-slot
                 can_reserve = false;
                 break;
@@ -225,6 +225,7 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
 
             //printf("%d\n", slot_need);
             if(old_slot_need != -1 && old_slot_need != slot_need) { // Make sure the delay in every cycle are same.
+                //printf("Swwitch: %d, i: %d, Time-slot: %d\n", sw->ID, i, time_slot[next_time_slot]);
                 can_reserve = false;
                 break;
             }
@@ -257,9 +258,6 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
             offset_table[packet->flow_id] = i;
             last_transmission_time = packet->start_transmission_time;
 
-            /**********BUG*********/
-            /** Here need to fix **/
-            /**********************/
             /*
             if(packet->acc_slot_count == 0) // Send by EndDevice
                 packet->start_transmission_time += (i + slot_need)*slot_duration;
@@ -272,6 +270,8 @@ bool SWPort::reserveTimeSlot(Packet *packet) {
             //printf("%d %d\n", sw->ID, packet->acc_slot_count);
             break;
         }
+        //if(!can_reserve && i == (slots_per_period - 1))
+        //    printf("Swwitch: %d, Slot need: %d\n", sw->ID, old_slot_need);
     }
     if(!can_reserve) {
         Packet *new_packet = new Packet(packet);
