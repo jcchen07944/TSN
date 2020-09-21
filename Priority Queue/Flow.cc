@@ -8,6 +8,7 @@ Flow::Flow(int ID) {
     this->ID = ID;
     this->_next_packet_time = 0;
     this->_time = 0;
+    this->accept = false;
 }
 
 Flow::~Flow() {

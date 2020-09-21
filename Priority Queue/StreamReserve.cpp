@@ -47,7 +47,7 @@ int main() {
 
     int TSN_FLOW_COUNT = 1000;
     int AVB_FLOW_COUNT = 0;
-    int BE_FLOW_COUNT = 0;
+    int BE_FLOW_COUNT = 10;
     std::vector<Flow*> TSN;
     std::vector<Flow*> AVB;
     std::vector<Flow*> BE;
@@ -58,20 +58,26 @@ int main() {
     for(int i = 0; i < BE_FLOW_COUNT; i++)
         BE.push_back(new Flow(i + TSN_FLOW_COUNT + AVB_FLOW_COUNT + 1));
     for(int i = 0; i < BE_FLOW_COUNT; i++) {
-        utility.setupBE(BE[i], 1500, 0, 1); // 120Mbps
+        std::uniform_int_distribution<int> src_distribution(0, 3);
+        std::uniform_int_distribution<int> dst_distribution(0, 3);
+        int src = src_distribution(generator) * 2;
+        int dst = dst_distribution(generator) * 2 + 1;
+        utility.setupBE(BE[i], 1500, src, dst); // 120Mbps
     }
 
     //utility.setupAVB(AVB[0], 'A', 400, 0, 1, 0);
     //utility.setupAVB(AVB[1], 'A', 800, 0, 1, 0);
 
-    //FILE *pFile;
-    //pFile = fopen("Computation.txt", "w");
+    FILE *pFile;
+    pFile = fopen("Record.txt", "w");
 
     std::default_random_engine generator;
 
     for(int i = 0; i < TSN_FLOW_COUNT; i++) {
-        std::normal_distribution<double> period_distribution(3, 1);
-        std::normal_distribution<double> size_distribution(65, 10);
+        std::uniform_int_distribution<int> period_distribution(0, 6);
+        std::uniform_int_distribution<int> size_distribution(30, 100);
+        //std::normal_distribution<double> period_distribution(3, 1);
+        //std::normal_distribution<double> size_distribution(65, 10);
         int period = (int)period_distribution(generator) * 150 + 100;
         int packet_size = (int)size_distribution(generator);
         std::poisson_distribution<int> time_distribution(period / 2);
@@ -91,17 +97,22 @@ int main() {
         utility.reserveTSN(TSN[i], sw, ed);
 
         double duration = (std::clock() - timer_start) / (double) CLOCKS_PER_SEC;
-        //fprintf (pFile, "%d %f\n", i+1, duration);
-    }
-    //return 0;
 
-    //fclose (pFile);
+        int accept_flow = 0;
+        for(int j = 0; j < END_DEVICE_COUNT; j++) {
+            accept_flow += ed[j]->accept_flow;
+        }
+        fprintf (pFile, "%d %d\n", i+1, accept_flow);
+    }
+
+    fclose (pFile);
 
     utility.resetNetworkTime(sw, ed);
     long long time = 0;
-    while(time > 100000) { // 1 second
+    while(time < 10000000) { // 1 second
         for(int i = 0; i < TSN_FLOW_COUNT; i++)
-            TSN[i]->run(ed[TSN[i]->source], TSN_FLOW);
+            if(TSN[i]->accept)
+                TSN[i]->run(ed[TSN[i]->source], TSN_FLOW);
         for(int i = 0; i < AVB_FLOW_COUNT; i++)
             AVB[i]->run(ed[AVB[i]->source], AVB_FLOW);
         for(int i = 0; i < BE_FLOW_COUNT; i++)

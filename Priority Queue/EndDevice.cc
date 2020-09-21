@@ -67,6 +67,7 @@ void EndDevice::receivePacket(Packet* packet) {
             printf("Flow ID : %d, Accept\n", packet->flow_id);
             accept_flow++;
             delete packet;
+            reserve_flow->accept = true;
             return;
         }
         else if(packet->reservation_state == LISTENER_REJECT) {
@@ -100,6 +101,7 @@ void EndDevice::receivePacket(Packet* packet) {
             printf("Flow ID : %d, Accept\n", packet->flow_id);
             accept_flow++;
             delete packet;
+            reserve_flow->accept = true;
             return;
         }
         else if(packet->reservation_state == LISTENER_REJECT) {

@@ -21,6 +21,8 @@ public:
     /* For packet information */
     int packet_id;
 
+    bool accept;
+
     Flow(int ID);
 
     ~Flow();

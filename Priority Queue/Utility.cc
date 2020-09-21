@@ -87,6 +87,7 @@ void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevi
     talker_attribute->flow_id = TSN->ID;
     talker_attribute->p_priority = 0;
 
+    ed[TSN->source]->reserve_flow = TSN;
     ed[TSN->source]->sendPacket(talker_attribute);
 
     resetNetworkTime(sw, ed);
@@ -121,6 +122,7 @@ void Utility::setupBE(Flow *BE, int packet_size, int source, int destination) {
     BE->packet_size = packet_size * byte;
     BE->source = source;
     BE->destination = destination;
+    BE->accept = true;
 }
 
 int Utility::gcd(int m, int n) {

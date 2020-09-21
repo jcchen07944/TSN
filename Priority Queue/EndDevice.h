@@ -7,9 +7,11 @@
 
 #include "Port.h"
 #include "Packet.h"
+#include "Flow.h"
 
 class EDPort;
 class SWPort;
+class Flow;
 
 class EndDevice {
 public:
@@ -25,6 +27,8 @@ public:
 
     int accept_flow;
     int reject_flow;
+
+    Flow* reserve_flow;
 
     EndDevice(int ID);
 
