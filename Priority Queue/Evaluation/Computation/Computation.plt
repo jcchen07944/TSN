@@ -1,5 +1,5 @@
 set xlabel "Number of deployed streams" font "Arial,12"
-set ylabel "Time (Second)" font "Arial,12"
+set ylabel "Time (Millisecond)" font "Arial,12"
 
 set xtics
 set ytics
