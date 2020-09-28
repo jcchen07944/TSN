@@ -39,14 +39,14 @@ int main() {
 
     utility.connectToSwitch(sw[0], sw[1]);
     utility.connectToSwitch(sw[1], sw[2]);
-    utility.connectToSwitch(sw[2], sw[3]);
-    utility.connectToSwitch(sw[3], sw[0]);
+    utility.connectToSwitch(sw[2], sw[0]);
+    utility.connectToSwitch(sw[3], sw[2]);
 
     utility.broadcastEndDevice(sw, ed);
 
     std::default_random_engine generator;
 
-    int TSN_FLOW_COUNT = 2000;
+    int TSN_FLOW_COUNT = 3000;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 0;
     std::vector<Flow*> TSN;
