@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
-#include <ctime>
 #include <random>
 #include <cstdlib>
 
@@ -16,8 +15,8 @@
 int main() {
     Utility utility;
 
-    const int END_DEVICE_COUNT = 2;
-    const int SWITCH_COUNT = 1;
+    const int END_DEVICE_COUNT = 8;
+    const int SWITCH_COUNT = 4;
 
     std::vector<EndDevice*> ed;
     std::vector<Switch*> sw;
@@ -28,13 +27,26 @@ int main() {
     for(int i = 0; i < SWITCH_COUNT; i++)
         sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
+    // Ring Topology
     utility.connectToSwitch(sw[0], ed[0]);
     utility.connectToSwitch(sw[0], ed[1]);
+    utility.connectToSwitch(sw[1], ed[2]);
+    utility.connectToSwitch(sw[1], ed[3]);
+    utility.connectToSwitch(sw[2], ed[4]);
+    utility.connectToSwitch(sw[2], ed[5]);
+    utility.connectToSwitch(sw[3], ed[6]);
+    utility.connectToSwitch(sw[3], ed[7]);
+
+    utility.connectToSwitch(sw[0], sw[1]);
+    utility.connectToSwitch(sw[1], sw[2]);
+    utility.connectToSwitch(sw[2], sw[3]);
+    utility.connectToSwitch(sw[3], sw[0]);
 
     utility.broadcastEndDevice(sw, ed);
 
     std::default_random_engine generator;
-    int TSN_FLOW_COUNT = 201;
+
+    int TSN_FLOW_COUNT = 2000;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 0;
     std::vector<Flow*> TSN;
@@ -60,6 +72,7 @@ int main() {
     FILE *pFile;
     pFile = fopen("Record.txt", "w");
 
+
     for(int i = 0; i < TSN_FLOW_COUNT; i++) {
         //std::uniform_int_distribution<int> period_distribution(0, 6);
         //std::uniform_int_distribution<int> size_distribution(30, 100);
@@ -69,20 +82,23 @@ int main() {
         int packet_size = (int)size_distribution(generator);
         std::poisson_distribution<int> time_distribution(period / 2);
         int start_transmission_time = time_distribution(generator);
-        int hop_count = 1;
-        //printf("Period : %d, Packet Size : %d, Time : %d, Src : %d, Dst : %d, Hop Count : %d\n", period, packet_size, start_transmission_time, src, dst, hop_count);
-        utility.setupTSN(TSN[i], period, packet_size, 0, 1, 0);
+        std::uniform_int_distribution<int> src_distribution(0, 3);
+        std::uniform_int_distribution<int> dst_distribution(0, 3);
+        int src = src_distribution(generator) * 2;
+        int dst = dst_distribution(generator) * 2 + 1;
+        int hop_count = std::min(std::abs(src/2 - dst/2), 4 - std::abs(src/2 - dst/2)) + 1;
+        printf("Period : %d, Packet Size : %d, Time : %d, Src : %d, Dst : %d, Hop Count : %d\n", period, packet_size, start_transmission_time, src, dst, hop_count);
+        utility.setupTSN(TSN[i], period, packet_size, src, dst, 0);
         TSN[i]->hop_count = hop_count;
         TSN[i]->priority = 7 - (period - 100)/150;
-        // Timer
-        std::clock_t timer_start = std::clock();
 
         utility.reserveTSN(TSN[i], sw, ed);
 
-        double duration = (std::clock() - timer_start) / (double) CLOCKS_PER_SEC;
-
-        if(i % 20 == 0)
-            fprintf (pFile, "%d %f\n", i, duration / ms);
+        int accept_flow = 0;
+        for(int j = 0; j < END_DEVICE_COUNT; j++) {
+            accept_flow += ed[j]->accept_flow;
+        }
+        fprintf (pFile, "%d %d\n", i+1, accept_flow);
     }
 
     fclose (pFile);

@@ -1,6 +1,10 @@
 #include <math.h>
 #include <stdio.h>
 #include <cmath>
+#include <ctime>
+#include <stdlib.h>
+#include <chrono>
+#include <iostream>
 
 #include "Port.h"
 #include "Constants.h"
@@ -134,9 +138,18 @@ void SWPort::run(long long time) {
                     return;
                 //printf("%.4f\n", (double)be_queue.front()->p_size / rate / us * 100.0d);
                 _pforward = be_queue.front();
-                if(_pforward->reservation_state == TALKER_ATTRIBUTE)
+                if(_pforward->reservation_state == TALKER_ATTRIBUTE) {
+                    double duration = 0.0f;
+                    std::clock_t start = std::clock();
                     if(!reserveTimeSlot(_pforward))
                         _pforward = nullptr;
+                    duration = (double)(std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000);
+                    char str[100];
+                    sprintf(str, "TDMA-S%dP%d.txt", sw->ID - 7, port_num);
+                    FILE *fp=fopen(str,"a");
+                    fprintf(fp, "%f\n", duration);
+                    fclose(fp);
+                }
                 _tforward = time + (double)be_queue.front()->p_size / rate / us * 100.0d;
                 be_queue.pop();
             }
@@ -167,9 +180,18 @@ void SWPort::run(long long time) {
             }
             else if(be_queue.size() > 0) {
                 _pforward = be_queue.front();
-                if(_pforward->reservation_state == TALKER_ATTRIBUTE)
+                if(_pforward->reservation_state == TALKER_ATTRIBUTE) {
+                    double duration = 0.0f;
+                    std::clock_t start = std::clock();
                     if(!reserveBandwidth(_pforward))
                         _pforward = nullptr;
+                    duration = (double)(std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000);
+                    char str[100];
+                    sprintf(str, "ATS-S%dP%d.txt", sw->ID - 7, port_num);
+                    FILE *fp=fopen(str,"a");
+                    fprintf(fp, "%f\n", duration);
+                    fclose(fp);
+                }
                 _tforward = time + (double)be_queue.front()->p_size / rate / us * 100.0d;
                 be_queue.pop();
             }
