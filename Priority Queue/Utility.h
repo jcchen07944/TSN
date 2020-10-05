@@ -31,6 +31,8 @@ public:
 	int lcm(int m, int n);
 
 	void resetNetworkTime(std::vector<Switch*> sw, std::vector<EndDevice*> ed);
+
+	int calculateHopCount(int src, int dst, std::vector<Switch*> sw, std::vector<EndDevice*> ed);
 };
 
 #endif

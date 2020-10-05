@@ -15,8 +15,8 @@
 int main() {
     Utility utility;
 
-    const int END_DEVICE_COUNT = 8;
-    const int SWITCH_COUNT = 4;
+    const int END_DEVICE_COUNT = 31;
+    const int SWITCH_COUNT = 15;
 
     std::vector<EndDevice*> ed;
     std::vector<Switch*> sw;
@@ -27,25 +27,67 @@ int main() {
     for(int i = 0; i < SWITCH_COUNT; i++)
         sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
-    // Ring Topology
+    // Orion
     utility.connectToSwitch(sw[0], ed[0]);
     utility.connectToSwitch(sw[0], ed[1]);
-    utility.connectToSwitch(sw[1], ed[2]);
+    utility.connectToSwitch(sw[0], ed[2]);
     utility.connectToSwitch(sw[1], ed[3]);
-    utility.connectToSwitch(sw[2], ed[4]);
+    utility.connectToSwitch(sw[1], ed[4]);
     utility.connectToSwitch(sw[2], ed[5]);
-    utility.connectToSwitch(sw[3], ed[6]);
-    utility.connectToSwitch(sw[3], ed[7]);
+    utility.connectToSwitch(sw[2], ed[6]);
+    utility.connectToSwitch(sw[2], ed[7]);
+    utility.connectToSwitch(sw[2], ed[8]);
+    utility.connectToSwitch(sw[2], ed[9]);
+    utility.connectToSwitch(sw[3], ed[10]);
+    utility.connectToSwitch(sw[3], ed[11]);
+    utility.connectToSwitch(sw[4], ed[12]);
+    utility.connectToSwitch(sw[5], ed[13]);
+    utility.connectToSwitch(sw[5], ed[14]);
+    utility.connectToSwitch(sw[6], ed[15]);
+    utility.connectToSwitch(sw[6], ed[16]);
+    utility.connectToSwitch(sw[6], ed[17]);
+    utility.connectToSwitch(sw[7], ed[18]);
+    utility.connectToSwitch(sw[7], ed[19]);
+    utility.connectToSwitch(sw[7], ed[20]);
+    utility.connectToSwitch(sw[8], ed[21]);
+    utility.connectToSwitch(sw[8], ed[22]);
+    utility.connectToSwitch(sw[9], ed[23]);
+    utility.connectToSwitch(sw[9], ed[24]);
+    utility.connectToSwitch(sw[10], ed[25]);
+    utility.connectToSwitch(sw[10], ed[26]);
+    utility.connectToSwitch(sw[11], ed[27]);
+    utility.connectToSwitch(sw[11], ed[28]);
+    utility.connectToSwitch(sw[12], ed[29]);
+    utility.connectToSwitch(sw[12], ed[30]);
 
-    utility.connectToSwitch(sw[0], sw[1]);
-    utility.connectToSwitch(sw[1], sw[2]);
-    utility.connectToSwitch(sw[2], sw[0]);
-    utility.connectToSwitch(sw[3], sw[2]);
+
+    utility.connectToSwitch(sw[0], sw[4]);
+    utility.connectToSwitch(sw[1], sw[4]);
+    utility.connectToSwitch(sw[2], sw[5]);
+    utility.connectToSwitch(sw[3], sw[5]);
+    utility.connectToSwitch(sw[4], sw[6]);
+    utility.connectToSwitch(sw[4], sw[13]);
+    utility.connectToSwitch(sw[5], sw[7]);
+    utility.connectToSwitch(sw[5], sw[13]);
+    utility.connectToSwitch(sw[6], sw[14]);
+    utility.connectToSwitch(sw[7], sw[13]);
+    utility.connectToSwitch(sw[7], sw[14]);
+    utility.connectToSwitch(sw[8], sw[14]);
+    utility.connectToSwitch(sw[9], sw[14]);
+    utility.connectToSwitch(sw[10], sw[14]);
+    utility.connectToSwitch(sw[11], sw[14]);
+    utility.connectToSwitch(sw[12], sw[14]);
 
     utility.broadcastEndDevice(sw, ed);
+    int hop_count[END_DEVICE_COUNT][END_DEVICE_COUNT] = {0};
+    for(int i = 0; i < END_DEVICE_COUNT; i++)
+        for(int j = 0; j < END_DEVICE_COUNT; j++) {
+            hop_count[i][j] = utility.calculateHopCount(i, j, sw, ed);
+            printf("SRC: %d, DST: %d, Count: %d\n", i, j, hop_count[i][j]);
+        }
+
 
     std::default_random_engine generator;
-
     int TSN_FLOW_COUNT = 3000;
     int AVB_FLOW_COUNT = 0;
     int BE_FLOW_COUNT = 0;
@@ -59,10 +101,11 @@ int main() {
     for(int i = 0; i < BE_FLOW_COUNT; i++)
         BE.push_back(new Flow(i + TSN_FLOW_COUNT + AVB_FLOW_COUNT + 1));
     for(int i = 0; i < BE_FLOW_COUNT; i++) {
-        std::uniform_int_distribution<int> src_distribution(0, 3);
-        std::uniform_int_distribution<int> dst_distribution(0, 3);
-        int src = src_distribution(generator) * 2;
-        int dst = dst_distribution(generator) * 2 + 1;
+        std::uniform_int_distribution<int> src_distribution(0, 30);
+        std::uniform_int_distribution<int> dst_distribution(0, 30);
+        int src = src_distribution(generator);
+        int dst = dst_distribution(generator);
+        dst = (src == dst)? (dst + 1)%31 : dst;
         utility.setupBE(BE[i], 1500, src, dst); // 120Mbps
     }
 
@@ -82,14 +125,15 @@ int main() {
         int packet_size = (int)size_distribution(generator);
         std::poisson_distribution<int> time_distribution(period / 2);
         int start_transmission_time = time_distribution(generator);
-        std::uniform_int_distribution<int> src_distribution(0, 3);
-        std::uniform_int_distribution<int> dst_distribution(0, 3);
-        int src = src_distribution(generator) * 2;
-        int dst = dst_distribution(generator) * 2 + 1;
-        int hop_count = std::min(std::abs(src/2 - dst/2), 4 - std::abs(src/2 - dst/2)) + 1;
-        printf("Period : %d, Packet Size : %d, Time : %d, Src : %d, Dst : %d, Hop Count : %d\n", period, packet_size, start_transmission_time, src, dst, hop_count);
+        std::uniform_int_distribution<int> src_distribution(0, 30);
+        std::uniform_int_distribution<int> dst_distribution(0, 30);
+        int src = src_distribution(generator);
+        int dst = dst_distribution(generator);
+        //dst = (src == dst)? (dst + 1)%31 : dst;
+        int hc = hop_count[src][dst];
+        printf("Period : %d, Packet Size : %d, Time : %d, Src : %d, Dst : %d, Hop Count : %d\n", period, packet_size, start_transmission_time, src, dst, hc);
         utility.setupTSN(TSN[i], period, packet_size, src, dst, 0);
-        TSN[i]->hop_count = hop_count;
+        TSN[i]->hop_count = hc;
         TSN[i]->priority = 7 - (period - 100)/150;
 
         utility.reserveTSN(TSN[i], sw, ed);

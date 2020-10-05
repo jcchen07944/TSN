@@ -42,8 +42,9 @@ void SWPort::receivePacket(Packet* packet) {
     if(packet->reservation_state == LISTENER_ACCEPT) {
         if(RESERVATION_MODE == TIME_RESERVATION)
             acceptTimeSlot(packet);
-        else if(RESERVATION_MODE == ATS)
+        else if(RESERVATION_MODE == ATS) {
             acceptBandwidth(packet);
+        }
     }
     else if(packet->reservation_state == LISTENER_REJECT) {
         if(RESERVATION_MODE == TIME_RESERVATION)
@@ -145,7 +146,7 @@ void SWPort::run(long long time) {
                         _pforward = nullptr;
                     duration = (double)(std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000);
                     char str[100];
-                    sprintf(str, "TDMA-S%dP%d.txt", sw->ID - 7, port_num);
+                    sprintf(str, "TDMA-S%dP%d.txt", sw->ID - 30, port_num);
                     FILE *fp=fopen(str,"a");
                     fprintf(fp, "%f\n", duration);
                     fclose(fp);
@@ -187,11 +188,13 @@ void SWPort::run(long long time) {
                         _pforward = nullptr;
                     duration = (double)(std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000);
                     char str[100];
-                    sprintf(str, "ATS-S%dP%d.txt", sw->ID - 7, port_num);
+                    sprintf(str, "ATS-S%dP%d.txt", sw->ID - 30, port_num);
                     FILE *fp=fopen(str,"a");
                     fprintf(fp, "%f\n", duration);
                     fclose(fp);
                 }
+                if(_pforward != nullptr)
+                    _pforward->hop_count++;
                 _tforward = time + (double)be_queue.front()->p_size / rate / us * 100.0d;
                 be_queue.pop();
             }

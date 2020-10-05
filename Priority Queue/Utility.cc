@@ -31,14 +31,16 @@ void Utility::broadcastEndDevice(std::vector<Switch*> sw, std::vector<EndDevice*
         broadcast_packet->broadcast = true;
         ed[i]->sendPacket(broadcast_packet);
 
+        resetNetworkTime(sw, ed);
+        long long int time = 0;
+        while(time++ < 1000) {
+            for(size_t i = 0; i < ed.size(); i++)
+                ed[i]->run();
+            for(size_t i = 0; i < sw.size(); i++)
+                sw[i]->run();
+        }
     }
-    long long int time = 0;
-    while(time++ < 10000) {
-        for(size_t i = 0; i < ed.size(); i++)
-            ed[i]->run();
-        for(size_t i = 0; i < sw.size(); i++)
-            sw[i]->run();
-    }
+
 
     // Debug
     for(size_t i = 0; i < sw.size(); i++) {
@@ -92,7 +94,7 @@ void Utility::reserveTSN(Flow *TSN, std::vector<Switch*> sw, std::vector<EndDevi
 
     resetNetworkTime(sw, ed);
     long long int time = 0;
-    while(time++ < 10000) {
+    while(time++ < 1000) {
         for(size_t i = 0; i < ed.size(); i++)
             ed[i]->run();
         for(size_t i = 0; i < sw.size(); i++)
@@ -143,4 +145,21 @@ void Utility::resetNetworkTime(std::vector<Switch*> sw, std::vector<EndDevice*> 
         ed[i]->resetTime();
     for(size_t i = 0; i < sw.size(); i++)
         sw[i]->resetTime();
+}
+
+int Utility::calculateHopCount(int src, int dst, std::vector<Switch*> sw, std::vector<EndDevice*> ed) {
+    Packet *packet = new Packet();
+    packet->source = src;
+    packet->destination = dst;
+    ed[src]->sendPacket(packet);
+    ed[dst]->hop_count = 0;
+    resetNetworkTime(sw, ed);
+    long long int time = 0;
+    while(time++ < 1000) {
+        for(size_t i = 0; i < ed.size(); i++)
+            ed[i]->run();
+        for(size_t i = 0; i < sw.size(); i++)
+            sw[i]->run();
+    }
+    return ed[dst]->hop_count;
 }

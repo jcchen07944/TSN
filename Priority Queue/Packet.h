@@ -21,6 +21,8 @@ public:
     /* For Priority Queue(STL priority_queue is not stable) */
     long long sequence_number;
 
+    int hop_count;
+
     /*****************/
     /** Reservation **/
     /*****************/

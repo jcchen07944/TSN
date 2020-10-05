@@ -24,6 +24,7 @@ public:
     double max_latency;
     double acc_latency;
     int flow_cnt;
+    int hop_count;
 
     int accept_flow;
     int reject_flow;

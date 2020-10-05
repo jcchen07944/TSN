@@ -112,6 +112,7 @@ void EndDevice::receivePacket(Packet* packet) {
             return;
         }
     }
+    hop_count = packet->hop_count;
     // Statistic
     double latency = (double)(_time - packet->send_time) / 100.0d;
     //printf("EndDevice %d receive flow %d at %.2f, latency : %.2f us\n", ID, packet->p_flow_id, _time / 100.0d, latency);
