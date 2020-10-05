@@ -7,6 +7,7 @@ set key left top Left reverse nobox
 set terminal png font "Arial,12"
 set output "Computation.png"
 set xtics 0 , 20, 300
+set yr [0:50]
 
 set title "Computation Time" font "Arial,16"
 # Plotting
