@@ -12,7 +12,7 @@
 #include "Packet.h"
 #include "Utility.h"
 
-int main() {
+int main(int argc, char *argv[]) {
     Utility utility;
 
     const int END_DEVICE_COUNT = 31;
@@ -116,11 +116,12 @@ int main() {
     pFile = fopen("Record.txt", "w");
 
 
+    generator.seed(atoi(argv[1]));
     for(int i = 0; i < TSN_FLOW_COUNT; i++) {
-        //std::uniform_int_distribution<int> period_distribution(0, 6);
-        //std::uniform_int_distribution<int> size_distribution(30, 100);
-        std::normal_distribution<double> period_distribution(3, 1);
-        std::normal_distribution<double> size_distribution(65, 10);
+        std::uniform_int_distribution<int> period_distribution(0, 6);
+        std::uniform_int_distribution<int> size_distribution(30, 100);
+        //std::normal_distribution<double> period_distribution(3, 1);
+        //std::normal_distribution<double> size_distribution(65, 10);
         int period = (int)period_distribution(generator) * 150 + 100;
         int packet_size = (int)size_distribution(generator);
         std::poisson_distribution<int> time_distribution(period / 2);
