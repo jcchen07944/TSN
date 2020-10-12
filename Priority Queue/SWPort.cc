@@ -146,7 +146,7 @@ void SWPort::run(long long time) {
                         _pforward = nullptr;
                     duration = (double)(std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000);
                     char str[100];
-                    sprintf(str, "TDMA-S%dP%d.txt", sw->ID - 30, port_num);
+                    sprintf(str, "TDMA-S%dP%d.txt", sw->ID - 7, port_num);
                     FILE *fp=fopen(str,"a");
                     fprintf(fp, "%f\n", duration);
                     fclose(fp);
@@ -188,7 +188,7 @@ void SWPort::run(long long time) {
                         _pforward = nullptr;
                     duration = (double)(std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000);
                     char str[100];
-                    sprintf(str, "ATS-S%dP%d.txt", sw->ID - 30, port_num);
+                    sprintf(str, "ATS-S%dP%d.txt", sw->ID - 7, port_num);
                     FILE *fp=fopen(str,"a");
                     fprintf(fp, "%f\n", duration);
                     fclose(fp);

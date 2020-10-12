@@ -1,9 +1,6 @@
 import os, glob
 import subprocess
 
-f = open('Total-TDMA-U.txt', 'r')
-total_time = [float(line) for line in f.readlines()]
-f.close()
 with open('Total-TDMA-U.txt', 'w') as filetowrite:
 	for i in range(300):
 		filetowrite.write("0\n")

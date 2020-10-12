@@ -31,6 +31,7 @@ void Utility::broadcastEndDevice(std::vector<Switch*> sw, std::vector<EndDevice*
         broadcast_packet->broadcast = true;
         ed[i]->sendPacket(broadcast_packet);
 
+        /*
         resetNetworkTime(sw, ed);
         long long int time = 0;
         while(time++ < 1000) {
@@ -39,8 +40,17 @@ void Utility::broadcastEndDevice(std::vector<Switch*> sw, std::vector<EndDevice*
             for(size_t i = 0; i < sw.size(); i++)
                 sw[i]->run();
         }
+        */
     }
 
+    resetNetworkTime(sw, ed);
+    long long int time = 0;
+    while(time++ < 1000) {
+        for(size_t i = 0; i < ed.size(); i++)
+            ed[i]->run();
+        for(size_t i = 0; i < sw.size(); i++)
+            sw[i]->run();
+    }
 
     // Debug
     for(size_t i = 0; i < sw.size(); i++) {

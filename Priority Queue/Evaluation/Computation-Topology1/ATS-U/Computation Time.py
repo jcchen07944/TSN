@@ -8,7 +8,7 @@ with open('Total-ATS-U.txt', 'w') as filetowrite:
 for i in range(20):
 	process = subprocess.Popen(["StreamReserve.exe", str(i)])
 	process.wait()
-	f = open('ATS-S15P1.txt', 'r')
+	f = open('ATS-S2P2.txt', 'r')
 	new_time = [float(line) for line in f.readlines()]
 	f.close()
 	f = open('Total-ATS-U.txt', 'r')

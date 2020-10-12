@@ -1,17 +1,14 @@
 import os, glob
 import subprocess
 
-f = open('Total-ATS-N.txt', 'r')
-total_time = [float(line) for line in f.readlines()]
-f.close()
 with open('Total-ATS-N.txt', 'w') as filetowrite:
 	for i in range(300):
 		filetowrite.write("0\n")
 
 for i in range(20):
-	process = subprocess.Popen("StreamReserve.exe", str(i))
+	process = subprocess.Popen(["StreamReserve.exe", str(i)])
 	process.wait()
-	f = open('ATS-S2P1.txt', 'r')
+	f = open('ATS-S2P2.txt', 'r')
 	new_time = [float(line) for line in f.readlines()]
 	f.close()
 	f = open('Total-ATS-N.txt', 'r')
