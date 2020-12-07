@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
         sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
     // Orion Topology
-    utility.connectToSwitch(sw[0], ed[0]);
+	utility.connectToSwitch(sw[0], ed[0]);
     utility.connectToSwitch(sw[0], ed[1]);
     utility.connectToSwitch(sw[0], ed[2]);
     utility.connectToSwitch(sw[1], ed[3]);
@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
     utility.connectToSwitch(sw[11], ed[28]);
     utility.connectToSwitch(sw[12], ed[29]);
     utility.connectToSwitch(sw[12], ed[30]);
+
     utility.connectToSwitch(sw[0], sw[4]);
     utility.connectToSwitch(sw[1], sw[4]);
     utility.connectToSwitch(sw[2], sw[5]);
@@ -135,8 +136,8 @@ int main(int argc, char *argv[]) {
 		}
         std::poisson_distribution<int> time_distribution(period / 2);
         int start_transmission_time = time_distribution(generator);
-        std::uniform_int_distribution<int> src_distribution(0, 3);
-        std::uniform_int_distribution<int> dst_distribution(0, 3);
+        std::uniform_int_distribution<int> src_distribution(0, END_DEVICE_COUNT-1);
+        std::uniform_int_distribution<int> dst_distribution(0, END_DEVICE_COUNT-1);
         int src = src_distribution(generator) * 2;
         int dst = dst_distribution(generator) * 2 + 1;
         dst = (src == dst)? (dst + 1)%END_DEVICE_COUNT : dst;
