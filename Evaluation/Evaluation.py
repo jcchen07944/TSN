@@ -6,16 +6,16 @@ import shutil
 # Schedulability ----------------------------------------------------------------------
 process = subprocess.Popen(["../StreamReserve.exe", "A", "0", "U"])
 process.wait()
-shutil.copy2('Schedulability.txt', './Schedulability/ATS-U-T1.dat')
+shutil.copy2('Schedulability.txt', './Schedulability/ATS-U.dat')
 process = subprocess.Popen(["../StreamReserve.exe", "A", "0", "N"])
 process.wait()
-shutil.copy2('Schedulability.txt', './Schedulability/ATS-N-T1.dat')
+shutil.copy2('Schedulability.txt', './Schedulability/ATS-N.dat')
 process = subprocess.Popen(["../StreamReserve.exe", "T", "0", "U"])
 process.wait()
-shutil.copy2('Schedulability.txt', './Schedulability/TDMA-U-T1.dat')
+shutil.copy2('Schedulability.txt', './Schedulability/TDMA-U.dat')
 process = subprocess.Popen(["../StreamReserve.exe", "T", "0", "N"])
 process.wait()
-shutil.copy2('Schedulability.txt', './Schedulability/TDMA-N-T1.dat')
+shutil.copy2('Schedulability.txt', './Schedulability/TDMA-N.dat')
 
 
 # Computation time --------------------------------------------------------------------
