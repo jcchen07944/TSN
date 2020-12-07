@@ -1,4 +1,4 @@
-# TimeAware Stream Reservation Mechanism under Distributed Model for TSN
+# Time-Aware Stream Reservation Mechanism under Distributed Model for TSN
 
 此份code模擬了網路中的各項元件: Switch, EndDevice, Flow, Packet，並提供"類同步"(device間的時間相差最多0.01μs)的方案在網路中傳遞packet. 其中，實作了Asynchronous Traffic Shaping (ATS)及論文中提出的TDMA-based的stream reservation過程. ATS的per-hop delay bound計算為實作IEEE 802.1Qcr V-2&V-9的數學分析公式，因此此自製模擬器不會對delay bound及stream reservation造成任何影響。  
 
