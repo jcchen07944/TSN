@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
 	
     Utility utility;
 
-    const int END_DEVICE_COUNT = 8;
-    const int SWITCH_COUNT = 4;
+    const int END_DEVICE_COUNT = 31;
+    const int SWITCH_COUNT = 15;
 
     std::vector<EndDevice*> ed;
     std::vector<Switch*> sw;
@@ -33,19 +33,55 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < SWITCH_COUNT; i++)
         sw.push_back(new Switch(i + END_DEVICE_COUNT));
 
-    // Ring Topology
+    // Orion Topology
     utility.connectToSwitch(sw[0], ed[0]);
     utility.connectToSwitch(sw[0], ed[1]);
-    utility.connectToSwitch(sw[1], ed[2]);
+    utility.connectToSwitch(sw[0], ed[2]);
     utility.connectToSwitch(sw[1], ed[3]);
-    utility.connectToSwitch(sw[2], ed[4]);
+    utility.connectToSwitch(sw[1], ed[4]);
     utility.connectToSwitch(sw[2], ed[5]);
-    utility.connectToSwitch(sw[3], ed[6]);
-    utility.connectToSwitch(sw[3], ed[7]);
-    utility.connectToSwitch(sw[0], sw[1]);
-    utility.connectToSwitch(sw[1], sw[2]);
-    utility.connectToSwitch(sw[2], sw[3]);
-    utility.connectToSwitch(sw[3], sw[0]);
+    utility.connectToSwitch(sw[2], ed[6]);
+    utility.connectToSwitch(sw[2], ed[7]);
+    utility.connectToSwitch(sw[2], ed[8]);
+    utility.connectToSwitch(sw[2], ed[9]);
+    utility.connectToSwitch(sw[3], ed[10]);
+    utility.connectToSwitch(sw[3], ed[11]);
+    utility.connectToSwitch(sw[4], ed[12]);
+    utility.connectToSwitch(sw[5], ed[13]);
+    utility.connectToSwitch(sw[5], ed[14]);
+    utility.connectToSwitch(sw[6], ed[15]);
+    utility.connectToSwitch(sw[6], ed[16]);
+    utility.connectToSwitch(sw[6], ed[17]);
+    utility.connectToSwitch(sw[7], ed[18]);
+    utility.connectToSwitch(sw[7], ed[19]);
+    utility.connectToSwitch(sw[7], ed[20]);
+    utility.connectToSwitch(sw[8], ed[21]);
+    utility.connectToSwitch(sw[8], ed[22]);
+    utility.connectToSwitch(sw[9], ed[23]);
+    utility.connectToSwitch(sw[9], ed[24]);
+    utility.connectToSwitch(sw[10], ed[25]);
+    utility.connectToSwitch(sw[10], ed[26]);
+    utility.connectToSwitch(sw[11], ed[27]);
+    utility.connectToSwitch(sw[11], ed[28]);
+    utility.connectToSwitch(sw[12], ed[29]);
+    utility.connectToSwitch(sw[12], ed[30]);
+    utility.connectToSwitch(sw[0], sw[4]);
+    utility.connectToSwitch(sw[1], sw[4]);
+    utility.connectToSwitch(sw[2], sw[5]);
+    utility.connectToSwitch(sw[3], sw[5]);
+    utility.connectToSwitch(sw[4], sw[6]);
+    utility.connectToSwitch(sw[4], sw[13]);
+    utility.connectToSwitch(sw[5], sw[7]);
+    utility.connectToSwitch(sw[5], sw[13]);
+    utility.connectToSwitch(sw[6], sw[14]);
+    utility.connectToSwitch(sw[7], sw[13]);
+    utility.connectToSwitch(sw[7], sw[14]);
+    utility.connectToSwitch(sw[8], sw[14]);
+    utility.connectToSwitch(sw[9], sw[14]);
+    utility.connectToSwitch(sw[10], sw[14]);
+    utility.connectToSwitch(sw[11], sw[14]);
+    utility.connectToSwitch(sw[12], sw[14]);
+
 
 	// Fill the routing table of each switch
     utility.broadcastEndDevice(sw, ed);
