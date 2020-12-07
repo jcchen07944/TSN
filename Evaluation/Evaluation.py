@@ -2,7 +2,7 @@ import os, glob
 import subprocess
 import shutil
 
-'''
+
 # Schedulability ----------------------------------------------------------------------
 process = subprocess.Popen(["../StreamReserve.exe", "A", "0", "U"])
 process.wait()
@@ -16,10 +16,10 @@ shutil.copy2('Schedulability.txt', './Schedulability/TDMA-U-T1.dat')
 process = subprocess.Popen(["../StreamReserve.exe", "T", "0", "N"])
 process.wait()
 shutil.copy2('Schedulability.txt', './Schedulability/TDMA-N-T1.dat')
-'''
+
 
 # Computation time --------------------------------------------------------------------
-EPOCH = 1
+EPOCH = 20
 
 with open('./Computation/Total-ATS-U.txt', 'w') as filetowrite:
 	for i in range(300):
