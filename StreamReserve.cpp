@@ -138,8 +138,8 @@ int main(int argc, char *argv[]) {
         int start_transmission_time = time_distribution(generator);
         std::uniform_int_distribution<int> src_distribution(0, END_DEVICE_COUNT-1);
         std::uniform_int_distribution<int> dst_distribution(0, END_DEVICE_COUNT-1);
-        int src = src_distribution(generator) * 2;
-        int dst = dst_distribution(generator) * 2 + 1;
+        int src = src_distribution(generator);
+        int dst = dst_distribution(generator);
         dst = (src == dst)? (dst + 1)%END_DEVICE_COUNT : dst;
         int hc = hop_count[src][dst];
         printf("Period : %d, Packet Size : %d, Time : %d, Src : %d, Dst : %d, Hop Count : %d\n", period, packet_size, start_transmission_time, src, dst, hc);
