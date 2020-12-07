@@ -40,7 +40,7 @@ for i in range(EPOCH):
 		os.remove(filename)
 	process = subprocess.Popen(["../StreamReserve.exe", "A", str(i), "U"])
 	process.wait()
-	f = open('ATS-S2P2.txt', 'r')
+	f = open('ATS-S15P1.txt', 'r')
 	new_time = [float(line) for line in f.readlines()]
 	f.close()
 	f = open('./Computation/Total-ATS-U.txt', 'r')
@@ -64,7 +64,7 @@ for i in range(EPOCH):
 		os.remove(filename)
 	process = subprocess.Popen(["../StreamReserve.exe", "A", str(i), "N"])
 	process.wait()
-	f = open('ATS-S2P2.txt', 'r')
+	f = open('ATS-S15P1.txt', 'r')
 	new_time = [float(line) for line in f.readlines()]
 	f.close()
 	f = open('./Computation/Total-ATS-N.txt', 'r')
@@ -88,7 +88,7 @@ for i in range(EPOCH):
 		os.remove(filename)
 	process = subprocess.Popen(["../StreamReserve.exe", "T", str(i), "U"])
 	process.wait()
-	f = open('TDMA-S2P2.txt', 'r')
+	f = open('TDMA-S15P1.txt', 'r')
 	new_time = [float(line) for line in f.readlines()]
 	f.close()
 	f = open('./Computation/Total-TDMA-U.txt', 'r')
@@ -112,7 +112,7 @@ for i in range(EPOCH):
 		os.remove(filename)
 	process = subprocess.Popen(["../StreamReserve.exe", "T", str(i), "N"])
 	process.wait()
-	f = open('TDMA-S2P2.txt', 'r')
+	f = open('TDMA-S15P1.txt', 'r')
 	new_time = [float(line) for line in f.readlines()]
 	f.close()
 	f = open('./Computation/Total-TDMA-N.txt', 'r')
