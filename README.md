@@ -14,6 +14,13 @@ Python 2.7.14
 g++ -std=c++11 -o StreamReserve.exe *.cc *.cpp
 ```
 
+## 執行
+```sh
+StreamReserve.exe ['A'/'T'] [Seed Num] ['N' / 'U']
+# For example (Reserve TSN streams using ATS & Normal Distribution)
+StreamReserve.exe A 0 N
+```
+
 ## 產生結果圖
 1. 於Evaluation資料夾中執行:
 ```sh
